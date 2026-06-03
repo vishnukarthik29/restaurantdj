@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load tm_tags %}
+{% block title %}Reservation History{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+    <a href="{% url 'customer_dashboard' %}" class="btn-ghost"><i class="bi bi-arrow-left"></i></a>
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">My Reservations</h1>
+      <p style="font-size:.875rem;color:var(--tm-text-muted);margin:0;">All your past and upcoming bookings</p>
+    </div>
+  </div>
+
+  <!-- Status filter pills -->
+  <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <a href="{% url 'reservation_history' %}" class="{% if not current_status %}btn-gold{% else %}btn-ghost{% endif %}" style="padding:.4rem 1rem;font-size:.82rem;">All</a>
+    {% for val, label in status_choices %}
+    <a href="?status={{ val }}" class="{% if current_status == val %}btn-gold{% else %}btn-ghost{% endif %}" style="padding:.4rem 1rem;font-size:.82rem;">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if reservations %}
+  <div class="tm-card">
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>Restaurant</th><th>Date & Time</th><th>Guests</th><th>Table</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for res in reservations %}
+          <tr>
+            <td><span style="color:var(--tm-gold);font-weight:600;letter-spacing:.5px;font-size:.82rem;">{{ res.reservation_id }}</span></td>
+            <td>
+              <div style="font-weight:500;color:var(--tm-cream);">{{ res.restaurant.name }}</div>
+              <div style="font-size:.78rem;color:var(--tm-text-dim);">{{ res.restaurant.city }}</div>
+            </td>
+            <td>
+              <div style="color:var(--tm-cream);">{{ res.reservation_date|date:"N j, Y" }}</div>
+              <div style="font-size:.78rem;color:var(--tm-text-dim);">{{ res.reservation_time|time:"g:i A" }}</div>
+            </td>
+            <td style="color:var(--tm-text-muted);">{{ res.guest_count }}</td>
+            <td style="color:var(--tm-text-muted);">{% if res.table %}#{{ res.table.table_number }}{% else %}—{% endif %}</td>
+            <td>
+              <span class="tm-badge {% if res.status == 'confirmed' %}tm-badge-green{% elif res.status == 'pending' %}tm-badge-amber{% elif res.status == 'cancelled' %}tm-badge-red{% elif res.status == 'completed' %}tm-badge-blue{% else %}tm-badge-gold{% endif %}">
+                {{ res.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <a href="{% url 'reservation_detail' res.reservation_id %}" class="btn-action" title="View"><i class="bi bi-eye-fill"></i></a>
+                {% if res.can_cancel %}
+                <form method="post" action="{% url 'cancel_reservation' res.reservation_id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-action danger" title="Cancel" data-cancel-reservation><i class="bi bi-x-lg"></i></button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if reservations.has_other_pages %}
+  <div class="tm-pagination">
+    {% if reservations.has_previous %}<a href="{% querystring page=reservations.previous_page_number %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>{% endif %}
+    {% for num in reservations.paginator.page_range %}<a href="{% querystring page=num %}" class="page-btn {% if reservations.number == num %}active{% endif %}">{{ num }}</a>{% endfor %}
+    {% if reservations.has_next %}<a href="{% querystring page=reservations.next_page_number %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="tm-card">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No Reservations</div>
+      <div class="empty-desc">{% if current_status %}No {{ current_status }} reservations.{% else %}You haven't made any reservations yet.{% endif %}</div>
+      <a href="{% url 'restaurant_list' %}" class="btn-gold">Find a Restaurant</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

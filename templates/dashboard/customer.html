@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="dash-user-card">
+        {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" class="dash-avatar" alt="">
+        {% else %}
+          <div class="dash-avatar-placeholder">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+        {% endif %}
+        <div class="dash-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="dash-role">{{ user.get_role_display }}</div>
+        {% if profile %}<div class="mt-2"><span class="tm-badge tm-badge-amber"><i class="bi bi-star-fill"></i> {{ profile.loyalty_points }} pts</span></div>{% endif %}
+      </div>
+      <ul class="dash-nav">
+        <li><a href="{% url 'customer_dashboard' %}" class="active"><i class="bi bi-grid-fill"></i> Overview</a></li>
+        <li><a href="{% url 'reservation_history' %}"><i class="bi bi-clock-history"></i> My Reservations</a></li>
+        <li><a href="{% url 'notifications' %}"><i class="bi bi-bell-fill"></i> Notifications</a></li>
+        <li><a href="{% url 'profile' %}"><i class="bi bi-person-fill"></i> Profile</a></li>
+        <hr style="border-color:var(--tm-border);margin:.5rem 0;">
+        <li><a href="{% url 'restaurant_list' %}"><i class="bi bi-search"></i> Find Restaurants</a></li>
+        {% if user.is_admin_user %}
+        <li><a href="{% url 'admin_dashboard' %}"><i class="bi bi-shield-fill"></i> Admin Panel</a></li>
+        {% endif %}
+        <li><a href="{% url 'logout' %}" style="color:#ff6b6b!important;"><i class="bi bi-box-arrow-right"></i> Sign Out</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <div>
+      <div class="mb-4">
+        <h1 style="font-family:var(--font-display);font-size:2rem;color:var(--tm-cream);margin-bottom:.2rem;">
+          Welcome back, {{ user.first_name|default:user.username }}! 👋
+        </h1>
+      </div>
+
+      {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>{% endfor %}{% endif %}
+
+      <!-- Stat cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3 fade-up">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-calendar-check-fill"></i></div>
+            <div><div class="stat-value">{{ stats.total }}</div><div class="stat-label">Total Bookings</div></div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3 fade-up">
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-calendar-event-fill"></i></div>
+            <div><div class="stat-value">{{ stats.upcoming }}</div><div class="stat-label">Upcoming</div></div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3 fade-up">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-check-circle-fill"></i></div>
+            <div><div class="stat-value">{{ stats.completed }}</div><div class="stat-label">Completed</div></div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3 fade-up">
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-star-fill"></i></div>
+            <div><div class="stat-value">{% if profile %}{{ profile.loyalty_points }}{% else %}0{% endif %}</div><div class="stat-label">Loyalty Points</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Upcoming reservations -->
+        <div class="col-lg-7 fade-up">
+          <div class="tm-card">
+            <div class="tm-card-header d-flex justify-content-between align-items-center">
+              <h5 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Upcoming Reservations</h5>
+              <a href="{% url 'reservation_history' %}" style="font-size:.8rem;">View all</a>
+            </div>
+            {% if upcoming %}
+              {% for res in upcoming %}
+              <div class="reservation-row">
+                <div class="res-date-block">
+                  <div class="res-date-day">{{ res.reservation_date|date:"j" }}</div>
+                  <div class="res-date-month">{{ res.reservation_date|date:"M" }}</div>
+                </div>
+                <div class="res-info">
+                  <div class="res-name">{{ res.restaurant.name }}</div>
+                  <div class="res-meta">{{ res.reservation_time|time:"g:i A" }} · {{ res.guest_count }} guest{{ res.guest_count|pluralize }}{% if res.table %} · Table {{ res.table.table_number }}{% endif %}</div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-1">
+                  <span class="tm-badge {% if res.status == 'confirmed' %}tm-badge-green{% else %}tm-badge-amber{% endif %}">{{ res.get_status_display }}</span>
+                  {% if res.can_cancel %}
+                  <form method="post" action="{% url 'cancel_reservation' res.reservation_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-danger-tm" style="padding:.2rem .6rem;font-size:.72rem;" data-cancel-reservation>Cancel</button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state py-4">
+                <div class="empty-icon" style="font-size:2.5rem;">📅</div>
+                <div class="empty-desc">No upcoming reservations.</div>
+                <a href="{% url 'restaurant_list' %}" class="btn-gold">Find a Table</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Notifications + actions -->
+        <div class="col-lg-5">
+          <div class="tm-card mb-4 fade-up">
+            <div class="tm-card-header"><h5 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Quick Actions</h5></div>
+            <div class="tm-card-body d-flex flex-column gap-2">
+              <a href="{% url 'restaurant_list' %}" class="btn-gold w-100"><i class="bi bi-search"></i> Find a Restaurant</a>
+              <a href="{% url 'reservation_history' %}" class="btn-outline-gold w-100"><i class="bi bi-clock-history"></i> Reservation History</a>
+              <a href="{% url 'profile' %}" class="btn-ghost w-100"><i class="bi bi-person"></i> Edit Profile</a>
+            </div>
+          </div>
+
+          <div class="tm-card fade-up">
+            <div class="tm-card-header d-flex justify-content-between align-items-center">
+              <h5 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Notifications</h5>
+              <a href="{% url 'notifications' %}" style="font-size:.8rem;">View all</a>
+            </div>
+            {% if recent_notifications %}
+              {% for n in recent_notifications %}
+              <div class="notif-item {% if not n.is_read %}unread{% endif %}" data-notif-id="{{ n.id }}">
+                <div class="notif-icon">{{ n.icon }}</div>
+                <div>
+                  <div style="font-size:.82rem;color:var(--tm-cream);font-weight:{% if not n.is_read %}600{% else %}400{% endif %};">{{ n.title }}</div>
+                  <div class="notif-time">{{ n.created_at|timesince }} ago</div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div style="padding:1.5rem;text-align:center;font-size:.85rem;color:var(--tm-text-dim);">No notifications.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

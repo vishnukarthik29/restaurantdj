@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}About TableMaster{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div style="background:radial-gradient(ellipse 800px 400px at 50% 40%, rgba(201,146,42,0.07) 0%,transparent 70%),var(--tm-mahogany);padding:8rem 0 5rem;text-align:center;">
+  <div class="container">
+    <div style="font-size:.8rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--tm-gold);margin-bottom:1rem;">Our Story</div>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.5rem,6vw,4rem);color:var(--tm-cream);margin-bottom:1.25rem;">
+      Redefining How India<br>Dines Out
+    </h1>
+    <p style="color:var(--tm-text-muted);font-size:1.1rem;max-width:580px;margin:0 auto 2rem;line-height:1.75;">
+      TableMaster combines AI intelligence with deep restaurant expertise to match every guest with their perfect table — before they even walk through the door.
+    </p>
+    <a href="{% url 'restaurant_list' %}" class="btn-gold">Explore Restaurants</a>
+  </div>
+</div>
+
+<!-- Mission -->
+<div class="section-pad">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5 fade-up">
+        <div style="font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tm-gold);margin-bottom:.75rem;">Our Mission</div>
+        <h2 style="font-family:var(--font-display);font-size:clamp(1.8rem,3vw,2.5rem);color:var(--tm-cream);margin-bottom:1.25rem;">
+          Every meal is a memory. We make sure yours starts perfectly.
+        </h2>
+        <p style="color:var(--tm-text-muted);line-height:1.8;">
+          We built TableMaster because we believe the dining experience starts long before the first course arrives. It starts the moment you decide you want to go out — and we're here to make that decision effortless, exciting, and guaranteed to delight.
+        </p>
+        <p style="color:var(--tm-text-muted);line-height:1.8;margin-top:1rem;">
+          Our AI engine doesn't just find an available table — it learns your preferences, understands restaurant dynamics, and delivers a recommendation that feels like it came from a sommelier, not a search engine.
+        </p>
+      </div>
+      <div class="col-lg-7 fade-up">
+        <div class="row g-3">
+          {% for item in mission_points %}
+          <div class="col-sm-6">
+            <div class="tm-card tm-card-body">
+              <div style="font-size:2rem;margin-bottom:.75rem;">{{ item.icon }}</div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:.4rem;">{{ item.title }}</div>
+              <div style="font-size:.85rem;color:var(--tm-text-muted);line-height:1.6;">{{ item.desc }}</div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="col-sm-6">
+            <div class="tm-card tm-card-body">
+              <div style="font-size:2rem;margin-bottom:.75rem;">🤖</div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:.4rem;">AI-Powered Matching</div>
+              <div style="font-size:.85rem;color:var(--tm-text-muted);line-height:1.6;">Six-dimension scoring engine recommends the optimal table for your group.</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tm-card tm-card-body">
+              <div style="font-size:2rem;margin-bottom:.75rem;">⚡</div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:.4rem;">Instant Confirmation</div>
+              <div style="font-size:.85rem;color:var(--tm-text-muted);line-height:1.6;">Real-time availability — your table is locked the moment you book.</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tm-card tm-card-body">
+              <div style="font-size:2rem;margin-bottom:.75rem;">🛡️</div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:.4rem;">Free Cancellation</div>
+              <div style="font-size:.85rem;color:var(--tm-text-muted);line-height:1.6;">Cancel up to 2 hours before — no fees, no questions asked.</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tm-card tm-card-body">
+              <div style="font-size:2rem;margin-bottom:.75rem;">🌟</div>
+              <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:.4rem;">Loyalty Rewards</div>
+              <div style="font-size:.85rem;color:var(--tm-text-muted);line-height:1.6;">Earn points with every booking and redeem for exclusive dining perks.</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div style="background:var(--tm-surface);border-top:1px solid var(--tm-border);border-bottom:1px solid var(--tm-border);padding:4rem 0;">
+  <div class="container">
+    <div class="row g-4 text-center">
+      {% for stat in platform_stats %}
+      <div class="col-6 col-md-3 fade-up">
+        <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--tm-gold);" data-count="{{ stat.value }}">{{ stat.value }}</div>
+        <div style="font-size:.82rem;color:var(--tm-text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.25rem;">{{ stat.label }}</div>
+      </div>
+      {% empty %}
+      <div class="col-6 col-md-3 fade-up">
+        <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--tm-gold);" data-count="500">500+</div>
+        <div style="font-size:.82rem;color:var(--tm-text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.25rem;">Restaurants</div>
+      </div>
+      <div class="col-6 col-md-3 fade-up">
+        <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--tm-gold);" data-count="50000">50K+</div>
+        <div style="font-size:.82rem;color:var(--tm-text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.25rem;">Happy Diners</div>
+      </div>
+      <div class="col-6 col-md-3 fade-up">
+        <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--tm-gold);" data-count="15">15+</div>
+        <div style="font-size:.82rem;color:var(--tm-text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.25rem;">Cities</div>
+      </div>
+      <div class="col-6 col-md-3 fade-up">
+        <div style="font-family:var(--font-display);font-size:2.8rem;color:var(--tm-gold);">98%</div>
+        <div style="font-size:.82rem;color:var(--tm-text-muted);text-transform:uppercase;letter-spacing:.07em;margin-top:.25rem;">Satisfaction Rate</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="section-pad text-center">
+  <div class="container">
+    <div class="gold-divider center"></div>
+    <h2 class="section-title mb-3">Ready to Find Your Perfect Table?</h2>
+    <p style="color:var(--tm-text-muted);margin-bottom:2rem;">Join thousands of diners who trust TableMaster for every occasion.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'restaurant_list' %}" class="btn-gold">Browse Restaurants</a>
+      {% if not user.is_authenticated %}
+      <a href="{% url 'register' %}" class="btn-outline-gold">Create Free Account</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

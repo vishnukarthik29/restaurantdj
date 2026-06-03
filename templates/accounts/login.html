@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="container">
+    <div class="auth-card">
+      <div class="auth-logo">⚜</div>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to manage your reservations</p>
+
+      {% if messages %}{% for m in messages %}
+        <div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>
+      {% endfor %}{% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="tm-form-group">
+          <label>Email Address <span class="required">*</span></label>
+          <div class="tm-input-group">
+            <i class="bi bi-envelope-fill input-icon"></i>
+            <input type="email" name="email"
+                   value="{{ form.email.value|default:'' }}"
+                   class="tm-input {% if form.email.errors %}input-error{% endif %}"
+                   placeholder="your@email.com" autofocus>
+          </div>
+          {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="tm-form-group">
+          <label>Password <span class="required">*</span></label>
+          <div class="tm-input-group">
+            <i class="bi bi-lock-fill input-icon"></i>
+            <input type="password" name="password" id="pwdField"
+                   class="tm-input {% if form.password.errors %}input-error{% endif %}"
+                   placeholder="Your password">
+            <i class="bi bi-eye input-action" id="togglePwd"></i>
+          </div>
+          {% if form.password.errors %}<div class="form-error">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="form-error mb-3">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="d-flex align-items-center gap-2" style="font-size:.85rem;color:var(--tm-text-muted);cursor:pointer;">
+            <input type="checkbox" name="remember_me" style="accent-color:var(--tm-gold);"> Remember me
+          </label>
+          <a href="{% url 'password_reset' %}" style="font-size:.85rem;">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-gold w-100">Sign In</button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="{% url 'register' %}">Create one</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('togglePwd').addEventListener('click', function() {
+  var f = document.getElementById('pwdField');
+  f.type = f.type === 'password' ? 'text' : 'password';
+  this.classList.toggle('bi-eye'); this.classList.toggle('bi-eye-slash');
+});
+</script>
+{% endblock %}

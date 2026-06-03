@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Reservation {{ reservation.reservation_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="padding-top:6rem!important;max-width:800px;">
+  <a href="{% if user.is_authenticated %}{% url 'customer_dashboard' %}{% else %}{% url 'home' %}{% endif %}"
+     class="btn-ghost mb-4 d-inline-flex align-items-center gap-2">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:2rem;color:var(--tm-cream);margin-bottom:.3rem;">Reservation Details</h1>
+      <div style="font-size:.9rem;color:var(--tm-text-muted);">ID: <span style="color:var(--tm-gold);font-weight:600;letter-spacing:1px;">{{ reservation.reservation_id }}</span></div>
+    </div>
+    <span class="tm-badge
+      {% if reservation.status == 'confirmed' %}tm-badge-green
+      {% elif reservation.status == 'pending' %}tm-badge-amber
+      {% elif reservation.status == 'cancelled' %}tm-badge-red
+      {% elif reservation.status == 'completed' %}tm-badge-blue
+      {% else %}tm-badge-gold{% endif %}" style="padding:.5rem 1rem;font-size:.8rem;">
+      {{ reservation.get_status_display }}
+    </span>
+  </div>
+
+  <div class="tm-card mb-3">
+    <div class="tm-card-body">
+      <h3 style="font-family:var(--font-display);font-size:1.2rem;color:var(--tm-cream);margin-bottom:.25rem;">{{ reservation.restaurant.name }}</h3>
+      <div style="font-size:.875rem;color:var(--tm-text-muted);">
+        <i class="bi bi-geo-alt-fill" style="color:var(--tm-gold);"></i>
+        {{ reservation.restaurant.address }}, {{ reservation.restaurant.city }}
+      </div>
+    </div>
+  </div>
+
+  <div class="tm-card mb-3">
+    <div class="tm-card-header"><h5 style="font-family:var(--font-display);font-size:1rem;color:var(--tm-cream);margin:0;">Booking Details</h5></div>
+    <div class="detail-grid" style="padding:1.25rem 1.5rem;">
+      <div class="detail-item"><label>Date</label><value>{{ reservation.reservation_date|date:"l, N j, Y" }}</value></div>
+      <div class="detail-item"><label>Time</label><value>{{ reservation.reservation_time|time:"g:i A" }}</value></div>
+      <div class="detail-item"><label>Guests</label><value>{{ reservation.guest_count }} guest{{ reservation.guest_count|pluralize }}</value></div>
+      <div class="detail-item">
+        <label>Table</label>
+        <value>{% if reservation.table %}Table {{ reservation.table.table_number }} — {{ reservation.table.get_table_type_display }}{% else %}To be assigned{% endif %}</value>
+      </div>
+      {% if reservation.occasion %}
+      <div class="detail-item"><label>Occasion</label><value>{{ reservation.get_occasion_display|default:reservation.occasion }}</value></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="tm-card mb-3">
+    <div class="tm-card-header"><h5 style="font-family:var(--font-display);font-size:1rem;color:var(--tm-cream);margin:0;">Contact Details</h5></div>
+    <div class="detail-grid" style="padding:1.25rem 1.5rem;">
+      <div class="detail-item"><label>Name</label><value>{{ reservation.customer_name }}</value></div>
+      <div class="detail-item"><label>Email</label><value>{{ reservation.customer_email }}</value></div>
+      <div class="detail-item"><label>Phone</label><value>{{ reservation.customer_phone }}</value></div>
+      {% if reservation.customer_whatsapp %}
+      <div class="detail-item"><label>WhatsApp</label><value>{{ reservation.customer_whatsapp }}</value></div>
+      {% endif %}
+    </div>
+    {% if reservation.special_requests %}
+    <div style="padding:0 1.5rem 1.25rem;">
+      <label style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tm-text-dim);">Special Requests</label>
+      <div style="font-size:.875rem;color:var(--tm-text-muted);margin-top:.4rem;">{{ reservation.special_requests }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if status_history %}
+  <div class="tm-card mb-4">
+    <div class="tm-card-header"><h5 style="font-family:var(--font-display);font-size:1rem;color:var(--tm-cream);margin:0;">Status History</h5></div>
+    <div class="tm-card-body">
+      {% for hist in status_history %}
+      <div style="display:flex;gap:.75rem;padding:.6rem 0;border-bottom:1px solid rgba(201,146,42,.08);">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--tm-gold);margin-top:6px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:.875rem;color:var(--tm-cream);font-weight:500;">{{ hist.get_status_display }}</div>
+          <div style="font-size:.78rem;color:var(--tm-text-dim);">
+            {{ hist.changed_at|date:"N j, Y" }} at {{ hist.changed_at|time:"g:i A" }}
+            {% if hist.notes %} · {{ hist.notes }}{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="d-flex gap-2 flex-wrap">
+    {% if reservation.can_cancel %}
+    <form method="post" action="{% url 'cancel_reservation' reservation.reservation_id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-danger-tm" data-cancel-reservation>
+        <i class="bi bi-x-circle"></i> Cancel Reservation
+      </button>
+    </form>
+    {% endif %}
+    <a href="{% url 'restaurant_detail' reservation.restaurant.slug %}" class="btn-ghost">
+      <i class="bi bi-building"></i> View Restaurant
+    </a>
+    <a href="{% url 'reservation_history' %}" class="btn-ghost">
+      <i class="bi bi-clock-history"></i> All Reservations
+    </a>
+  </div>
+</div>
+{% endblock %}

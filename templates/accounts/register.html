@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="padding-top:7rem;padding-bottom:4rem;">
+  <div class="container">
+    <div class="auth-card" style="max-width:520px;">
+      <div class="auth-logo">⚜</div>
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Join TableMaster for AI-powered reservations</p>
+
+      {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>{% endfor %}{% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <div class="tm-form-group mb-0">
+              <label>First Name <span class="required">*</span></label>
+              <input type="text" name="first_name"
+                     value="{{ form.first_name.value|default:'' }}"
+                     class="tm-input {% if form.first_name.errors %}input-error{% endif %}"
+                     placeholder="First name">
+              {% if form.first_name.errors %}<div class="form-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tm-form-group mb-0">
+              <label>Last Name <span class="required">*</span></label>
+              <input type="text" name="last_name"
+                     value="{{ form.last_name.value|default:'' }}"
+                     class="tm-input {% if form.last_name.errors %}input-error{% endif %}"
+                     placeholder="Last name">
+              {% if form.last_name.errors %}<div class="form-error">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="tm-form-group">
+          <label>Email Address <span class="required">*</span></label>
+          <div class="tm-input-group">
+            <i class="bi bi-envelope-fill input-icon"></i>
+            <input type="email" name="email"
+                   value="{{ form.email.value|default:'' }}"
+                   class="tm-input {% if form.email.errors %}input-error{% endif %}"
+                   placeholder="your@email.com" autofocus>
+          </div>
+          {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="tm-form-group">
+          <label>Phone Number</label>
+          <div class="tm-input-group">
+            <i class="bi bi-telephone-fill input-icon"></i>
+            <input type="tel" name="phone"
+                   value="{{ form.phone.value|default:'' }}"
+                   class="tm-input" placeholder="+91 98765 43210">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <div class="tm-form-group mb-0">
+              <label>Password <span class="required">*</span></label>
+              <div class="tm-input-group">
+                <i class="bi bi-lock-fill input-icon"></i>
+                <input type="password" name="password1" id="id_password1"
+                       class="tm-input {% if form.password1.errors %}input-error{% endif %}"
+                       placeholder="Min 8 characters">
+                <i class="bi bi-eye input-action" onclick="togglePwd('id_password1',this)"></i>
+              </div>
+              {% if form.password1.errors %}<div class="form-error">{{ form.password1.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="tm-form-group mb-0">
+              <label>Confirm Password <span class="required">*</span></label>
+              <div class="tm-input-group">
+                <i class="bi bi-lock-fill input-icon"></i>
+                <input type="password" name="password2" id="id_password2"
+                       class="tm-input {% if form.password2.errors %}input-error{% endif %}"
+                       placeholder="Repeat password">
+                <i class="bi bi-eye input-action" onclick="togglePwd('id_password2',this)"></i>
+              </div>
+              {% if form.password2.errors %}<div class="form-error">{{ form.password2.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if form.non_field_errors %}<div class="form-error mb-3">{{ form.non_field_errors.0 }}</div>{% endif %}
+
+        <div id="pwdStrength" class="mb-3" style="display:none;">
+          <div style="height:4px;background:var(--tm-mahogany-3);border-radius:2px;overflow:hidden;margin-bottom:.3rem;">
+            <div id="pwdStrengthBar" style="height:100%;width:0;transition:width .3s,background .3s;border-radius:2px;"></div>
+          </div>
+          <div id="pwdStrengthLabel" style="font-size:.75rem;color:var(--tm-text-dim);"></div>
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="agree_terms" id="agreeTerms" required>
+          <label class="form-check-label" for="agreeTerms" style="font-size:.85rem;color:var(--tm-text-muted);">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-gold w-100">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd(id, icon) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; icon.classList.replace('bi-eye','bi-eye-slash'); }
+  else { input.type = 'password'; icon.classList.replace('bi-eye-slash','bi-eye'); }
+}
+document.getElementById('id_password1')?.addEventListener('input', function() {
+  const val = this.value;
+  const wrap = document.getElementById('pwdStrength');
+  const bar  = document.getElementById('pwdStrengthBar');
+  const lbl  = document.getElementById('pwdStrengthLabel');
+  if (!val) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  let score = [val.length >= 8, /[A-Z]/.test(val), /[0-9]/.test(val), /[^A-Za-z0-9]/.test(val)].filter(Boolean).length;
+  const levels = [
+    { pct:'25%', color:'#e74c3c', label:'Weak' },
+    { pct:'50%', color:'#f39c12', label:'Fair' },
+    { pct:'75%', color:'#3498db', label:'Good' },
+    { pct:'100%', color:'#2ecc71', label:'Strong' },
+  ];
+  const lvl = levels[score - 1] || levels[0];
+  bar.style.width = lvl.pct; bar.style.background = lvl.color;
+  lbl.textContent = lvl.label; lbl.style.color = lvl.color;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media uploads
+
+media/
+
+# Static collected files
+
+staticfiles/
+
+# Environment variables
+
+.env
+.env.*
+
+# IDEs
+
+.vscode/
+.idea/
+
+# macOS
+
+.DS_Store
+
+# Windows
+
+Thumbs.db
+desktop.ini
+
+# Testing
+
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.cache/
+
+# Build
+
+build/
+dist/
+*.egg-info/
+
+# Migrations (optional)
+
+# Uncomment only if you do NOT want migrations in git
+
+# */migrations/*
+
+# !*/migrations/**init**.py
+
+# SQLite backups
+
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Logs
+
+logs/
+*.log
+
+# Temporary files
+
+*.tmp
+*.bak
+*.swp
+*~
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# MyPy
+
+.mypy_cache/
+
+# Ruff
+
+.ruff_cache/
+
+# Pyright
+
+.pyright/
+
+# Coverage reports
+
+coverage.xml
+coverage/
+
+# Django collected static
+
+static_cdn/

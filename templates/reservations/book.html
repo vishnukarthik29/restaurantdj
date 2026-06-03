@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}Reserve — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:6rem!important;">
+  <nav style="font-size:.82rem;color:var(--tm-text-dim);margin-bottom:2rem;">
+    <a href="{% url 'restaurant_list' %}" style="color:var(--tm-text-dim);">Restaurants</a> ›
+    <a href="{% url 'restaurant_detail' restaurant.slug %}" style="color:var(--tm-text-dim);">{{ restaurant.name }}</a> ›
+    <span style="color:var(--tm-text-muted);">Reserve</span>
+  </nav>
+
+  <input type="hidden" id="restaurantSlug" value="{{ restaurant.slug }}">
+
+  <div class="booking-layout">
+    <!-- Form column -->
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:2.2rem;color:var(--tm-cream);margin-bottom:.4rem;">Make a Reservation</h1>
+      <p style="color:var(--tm-text-muted);margin-bottom:2rem;">Fill in your details — AI will find the perfect table.</p>
+
+      {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>{% endfor %}{% endif %}
+
+      {% if alternative_slots %}
+      <div style="background:var(--tm-gold-dim);border:1px solid var(--tm-border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;">
+        <div style="font-size:.8rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tm-gold);margin-bottom:.6rem;">
+          Available Alternatives
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          {% for s in alternative_slots %}
+            <span class="tm-badge tm-badge-gold" style="cursor:pointer;" onclick="fillSlot('{{ s.date }}','{{ s.time }}')">
+              {{ s.date }} {{ s.time }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'create_reservation' restaurant.slug %}" id="bookingForm" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="selected_table_id" id="selectedTableId">
+
+        <!-- Step 1 -->
+        <div class="tm-card mb-4">
+          <div class="tm-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--tm-gold);color:var(--tm-mahogany);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">1</div>
+              <h3 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Date, Time & Guests</h3>
+            </div>
+          </div>
+          <div class="tm-card-body">
+            <div class="row g-3">
+              <div class="col-sm-4">
+                <div class="tm-form-group mb-0">
+                  <label>Date <span class="required">*</span></label>
+                  <input type="date" name="reservation_date" id="id_reservation_date"
+                         value="{{ form.reservation_date.value|default:'' }}"
+                         min="{{ min_date }}"
+                         class="tm-input {% if form.reservation_date.errors %}input-error{% endif %}">
+                  {% if form.reservation_date.errors %}<div class="form-error">{{ form.reservation_date.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="tm-form-group mb-0">
+                  <label>Time <span class="required">*</span></label>
+                  <input type="time" name="reservation_time" id="id_reservation_time"
+                         value="{{ form.reservation_time.value|default:'' }}"
+                         min="10:00" max="22:30"
+                         class="tm-input {% if form.reservation_time.errors %}input-error{% endif %}">
+                  {% if form.reservation_time.errors %}<div class="form-error">{{ form.reservation_time.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="tm-form-group mb-0">
+                  <label>Guests <span class="required">*</span></label>
+                  <div class="d-flex align-items-center gap-2">
+                    <button type="button" id="guestMinus" class="btn-ghost" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;">−</button>
+                    <input type="number" name="guest_count" id="id_guest_count"
+                           value="{{ form.guest_count.value|default:2 }}" min="1" max="20"
+                           class="tm-input" style="text-align:center;">
+                    <button type="button" id="guestPlus" class="btn-ghost" style="width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="availabilityStatus" class="mt-3"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: Table selection (optional) -->
+        {% if tables %}
+        <div class="tm-card mb-4">
+          <div class="tm-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--tm-gold);color:var(--tm-mahogany);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">2</div>
+              <h3 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">
+                Pick a Table <span style="font-size:.8rem;font-weight:400;color:var(--tm-text-dim);">(optional — AI will choose if skipped)</span>
+              </h3>
+            </div>
+          </div>
+          <div class="tm-card-body">
+            <div class="table-grid">
+              {% for t in tables %}
+              <div class="table-card" onclick="selectTable({{ t.id }}, this)" style="cursor:pointer;">
+                <div class="table-icon">{{ t.type_icon }}</div>
+                <div class="table-type">Table {{ t.table_number }}</div>
+                <div class="table-cap">{{ t.get_table_type_display }}</div>
+                <div class="table-cap">≤ {{ t.capacity }} guests</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Step 3: Contact details -->
+        <div class="tm-card mb-4">
+          <div class="tm-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--tm-gold);color:var(--tm-mahogany);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;">{% if tables %}3{% else %}2{% endif %}</div>
+              <h3 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Your Details</h3>
+            </div>
+          </div>
+          <div class="tm-card-body">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Full Name <span class="required">*</span></label>
+                  <input type="text" name="customer_name" value="{{ form.customer_name.value|default:'' }}"
+                         class="tm-input {% if form.customer_name.errors %}input-error{% endif %}" placeholder="Your full name">
+                  {% if form.customer_name.errors %}<div class="form-error">{{ form.customer_name.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Email <span class="required">*</span></label>
+                  <input type="email" name="customer_email" value="{{ form.customer_email.value|default:'' }}"
+                         class="tm-input {% if form.customer_email.errors %}input-error{% endif %}" placeholder="your@email.com">
+                  {% if form.customer_email.errors %}<div class="form-error">{{ form.customer_email.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Phone <span class="required">*</span></label>
+                  <input type="tel" name="customer_phone" value="{{ form.customer_phone.value|default:'' }}"
+                         class="tm-input {% if form.customer_phone.errors %}input-error{% endif %}" placeholder="+91 98765 43210">
+                  {% if form.customer_phone.errors %}<div class="form-error">{{ form.customer_phone.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Occasion</label>
+                  <select name="occasion" class="tm-select">
+                    {% for val, label in form.fields.occasion.choices %}
+                      <option value="{{ val }}" {% if form.occasion.value == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="tm-form-group mb-0">
+                  <label>Special Requests</label>
+                  <textarea name="special_requests" class="tm-textarea" rows="3"
+                            placeholder="Dietary requirements, accessibility needs, celebration details…">{{ form.special_requests.value|default:'' }}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="form-error mb-3">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="d-flex gap-3 justify-content-end">
+          <a href="{% url 'restaurant_detail' restaurant.slug %}" class="btn-ghost">Back</a>
+          <button type="submit" class="btn-gold" style="min-width:200px;">
+            <i class="bi bi-calendar-check"></i> Confirm Reservation
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="booking-sidebar">
+      <!-- AI Panel — id="aiPanel" is required by tablemaster.js -->
+      <div class="ai-panel mb-3" id="aiPanel">
+        <div class="ai-panel-title"><span class="ai-spark">✦</span> AI Table Recommendation</div>
+        <div id="aiContent">
+          <p class="ai-reasoning">Enter date, time and guest count to get an instant AI recommendation.</p>
+        </div>
+      </div>
+
+      <div class="booking-summary-card">
+        <img src="{{ primary_image }}" alt="{{ restaurant.name }}" class="booking-summary-img">
+        <div class="booking-summary-body">
+          <h4 style="font-family:var(--font-display);font-size:1.2rem;color:var(--tm-cream);margin-bottom:.5rem;">{{ restaurant.name }}</h4>
+          <div style="font-size:.82rem;color:var(--tm-text-muted);display:flex;flex-direction:column;gap:.4rem;">
+            <div><i class="bi bi-geo-alt-fill" style="color:var(--tm-gold);margin-right:.4rem;"></i>{{ restaurant.city }}{% if restaurant.neighborhood %}, {{ restaurant.neighborhood }}{% endif %}</div>
+            <div>★ {{ restaurant.avg_rating|floatformat:1 }} · {{ restaurant.total_reviews }} reviews</div>
+            <div style="color:var(--tm-gold);">{{ restaurant.price_symbol }}</div>
+          </div>
+          <hr style="border-color:var(--tm-border);margin:1rem 0;">
+          <div style="font-size:.8rem;color:var(--tm-text-dim);display:flex;flex-direction:column;gap:.4rem;">
+            <div>✅ Free cancellation up to 2 hrs before</div>
+            <div>✨ AI-powered table selection</div>
+            <div>📧 Instant confirmation email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectTable(id, el) {
+  document.querySelectorAll('.table-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('selectedTableId').value = id;
+  Toast.success('Table ' + el.querySelector('.table-type').textContent + ' selected');
+}
+</script>
+{% endblock %}

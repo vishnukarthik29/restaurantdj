@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load tm_tags %}
+{% block title %}Find Restaurants{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container-xl">
+    <h1 class="page-header-title mb-1">Find Your Perfect Table</h1>
+    <p style="color:var(--tm-text-muted);margin-bottom:2rem;">{{ total_count }} restaurant{{ total_count|pluralize }} available</p>
+
+    <form id="restaurantSearchForm" method="get" action="{% url 'restaurant_list' %}">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4">
+          <div class="tm-input-group">
+            <i class="bi bi-search input-icon"></i>
+            <input type="text" name="q" value="{{ request.GET.q }}" class="tm-input" placeholder="Restaurant name or cuisine…">
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="tm-input-group">
+            <i class="bi bi-geo-alt-fill input-icon"></i>
+            <input type="text" name="city" value="{{ request.GET.city }}" class="tm-input" placeholder="City…">
+          </div>
+        </div>
+        <div class="col-lg-2">
+          <select name="cuisine" class="tm-select">
+            <option value="">All Cuisines</option>
+            {% for c in cuisine_types %}
+              <option value="{{ c.slug }}" {% if request.GET.cuisine == c.slug %}selected{% endif %}>{{ c.icon }} {{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-2">
+          <select name="sort" class="tm-select">
+            <option value="-is_featured" {% if not request.GET.sort or request.GET.sort == '-is_featured' %}selected{% endif %}>Featured</option>
+            <option value="-rating"      {% if request.GET.sort == '-rating' %}selected{% endif %}>Highest Rated</option>
+            <option value="-created_at"  {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest</option>
+            <option value="name"         {% if request.GET.sort == 'name' %}selected{% endif %}>A–Z</option>
+          </select>
+        </div>
+        <div class="col-lg-1">
+          <button type="submit" class="btn-gold w-100" style="height:43px;"><i class="bi bi-search"></i></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="container-xl py-4">
+  <div class="row g-4">
+    <!-- Filter sidebar -->
+    <div class="col-lg-3">
+      <div class="filter-sidebar">
+        <div class="filter-section-title">Price Range</div>
+        {% for val, label in price_choices %}
+        <label class="filter-option">
+          <input type="checkbox" name="price" value="{{ val }}" form="restaurantSearchForm"
+                 {% if request.GET.price == val %}checked{% endif %}
+                 style="accent-color:var(--tm-gold);">
+          {{ label }}
+        </label>
+        {% endfor %}
+
+        <div class="filter-section-title mt-3">Features</div>
+        <label class="filter-option">
+          <input type="checkbox" name="has_parking" value="1" form="restaurantSearchForm"
+                 {% if request.GET.has_parking %}checked{% endif %} style="accent-color:var(--tm-gold);">
+          🅿 Parking
+        </label>
+        <label class="filter-option">
+          <input type="checkbox" name="has_wifi" value="1" form="restaurantSearchForm"
+                 {% if request.GET.has_wifi %}checked{% endif %} style="accent-color:var(--tm-gold);">
+          📶 WiFi
+        </label>
+        <label class="filter-option">
+          <input type="checkbox" name="has_outdoor" value="1" form="restaurantSearchForm"
+                 {% if request.GET.has_outdoor %}checked{% endif %} style="accent-color:var(--tm-gold);">
+          🌿 Outdoor Seating
+        </label>
+        <label class="filter-option">
+          <input type="checkbox" name="has_private" value="1" form="restaurantSearchForm"
+                 {% if request.GET.has_private %}checked{% endif %} style="accent-color:var(--tm-gold);">
+          🚪 Private Dining
+        </label>
+        <label class="filter-option">
+          <input type="checkbox" name="accessible" value="1" form="restaurantSearchForm"
+                 {% if request.GET.accessible %}checked{% endif %} style="accent-color:var(--tm-gold);">
+          ♿ Accessible
+        </label>
+
+        <div class="mt-3 d-flex gap-2">
+          <button type="submit" form="restaurantSearchForm" class="btn-outline-gold flex-fill" style="font-size:.82rem;">Apply</button>
+          <a href="{% url 'restaurant_list' %}" class="btn-ghost" style="font-size:.82rem;padding:.5rem .8rem;">Clear</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="col-lg-9">
+      <div class="results-header" style="margin-bottom:1.25rem;">
+        <span style="font-size:.875rem;color:var(--tm-text-muted);">
+          {% if request.GET.q %}Results for <strong>"{{ request.GET.q }}"</strong> — {% endif %}
+          <strong>{{ total_count }}</strong> restaurant{{ total_count|pluralize }} found
+        </span>
+      </div>
+
+      {% if restaurants %}
+        <div class="row g-4">
+          {% for r in restaurants %}
+          <div class="col-sm-6 col-xl-4 fade-up">
+            <div class="tm-card restaurant-card" onclick="window.location='{% url 'restaurant_detail' r.slug %}'">
+              <div class="restaurant-card-img-wrap">
+                <img src="{{ r.primary_image }}" alt="{{ r.name }}" class="restaurant-card-img"
+                     onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400'">
+                {% if r.is_featured %}
+                  <span class="restaurant-card-badge featured">⭐ Featured</span>
+                {% endif %}
+                {% if user.is_authenticated %}
+                <button class="fav-btn" data-slug="{{ r.slug }}" title="Add to favourites" onclick="event.stopPropagation()">
+                  <i class="bi bi-heart"></i>
+                </button>
+                {% endif %}
+              </div>
+              <div class="restaurant-card-body">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                  <h3 class="restaurant-title">{{ r.name }}</h3>
+                  <span style="color:var(--tm-gold);font-size:.85rem;white-space:nowrap;">{{ r.price_symbol }}</span>
+                </div>
+                <div class="restaurant-meta">
+                  <span><i class="bi bi-geo-alt-fill"></i> {{ r.city }}{% if r.neighborhood %}, {{ r.neighborhood }}{% endif %}</span>
+                  <span class="star-rating">
+                    ★ {{ r.avg_rating|floatformat:1 }}
+                    <span class="count">({{ r.total_reviews }})</span>
+                  </span>
+                </div>
+                <div class="cuisine-tags">
+                  {% for c in r.cuisine_types.all|slice:":3" %}
+                    <span class="cuisine-tag">{{ c.name }}</span>
+                  {% endfor %}
+                </div>
+                <a href="{% url 'restaurant_detail' r.slug %}" class="btn-gold w-100" onclick="event.stopPropagation()">
+                  Reserve Now
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if restaurants.has_other_pages %}
+        <div class="tm-pagination">
+          {% if restaurants.has_previous %}
+            <a href="{% querystring page=restaurants.previous_page_number %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>
+          {% endif %}
+          {% for num in restaurants.paginator.page_range %}
+            {% if num > restaurants.number|add:'-4' and num < restaurants.number|add:'4' %}
+            <a href="{% querystring page=num %}" class="page-btn {% if restaurants.number == num %}active{% endif %}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if restaurants.has_next %}
+            <a href="{% querystring page=restaurants.next_page_number %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <div class="empty-title">No Restaurants Found</div>
+          <div class="empty-desc">Try adjusting your search or clearing the filters.</div>
+          <a href="{% url 'restaurant_list' %}" class="btn-outline-gold">Clear Filters</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

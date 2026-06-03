@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load tm_tags %}
+{% block title %}Manage Reservations{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">Reservations</h1>
+      <p style="color:var(--tm-text-muted);font-size:.875rem;margin:0;">{{ total_count }} total</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.75rem;flex-wrap:wrap;">
+    <a href="{% url 'admin_dashboard' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;">Overview</a>
+    <a href="{% url 'admin_restaurants' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-building"></i> Restaurants</a>
+    <a href="{% url 'admin_reservations' %}" class="btn-gold" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-calendar3"></i> Reservations</a>
+    <a href="{% url 'admin_users' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-people-fill"></i> Users</a>
+    <a href="{% url 'admin_analytics' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-graph-up"></i> Analytics</a>
+  </div>
+
+  <form method="get" class="mb-3">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <div class="tm-input-group">
+          <i class="bi bi-search input-icon"></i>
+          <input type="text" name="q" value="{{ request.GET.q }}" class="tm-input" placeholder="Search ID or customer…">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select name="status" class="tm-select">
+          <option value="">All Statuses</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="restaurant" class="tm-select">
+          <option value="">All Restaurants</option>
+          {% for r in restaurant_list %}
+            <option value="{{ r.id }}" {% if request.GET.restaurant == r.id|stringformat:'s' %}selected{% endif %}>{{ r.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="date" name="date" value="{{ request.GET.date }}" class="tm-input">
+      </div>
+      <div class="col-auto d-flex gap-2">
+        <button type="submit" class="btn-outline-gold" style="height:43px;">Filter</button>
+        <a href="{% url 'admin_reservations' %}" class="btn-ghost" style="height:43px;padding:.6rem .9rem;">Clear</a>
+      </div>
+    </div>
+  </form>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>{% endfor %}{% endif %}
+
+  <div class="tm-card">
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>Customer</th><th>Restaurant</th><th>Date & Time</th><th>Guests</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for res in reservations %}
+          <tr>
+            <td><a href="{% url 'reservation_detail' res.reservation_id %}" style="color:var(--tm-gold);font-size:.8rem;font-weight:600;">{{ res.reservation_id }}</a></td>
+            <td>
+              <div style="font-weight:500;color:var(--tm-cream);">{{ res.customer_name }}</div>
+              <div style="font-size:.76rem;color:var(--tm-text-dim);">{{ res.customer_email }}</div>
+            </td>
+            <td style="color:var(--tm-text-muted);">{{ res.restaurant.name }}</td>
+            <td>
+              <div style="color:var(--tm-cream);">{{ res.reservation_date|date:"N j, Y" }}</div>
+              <div style="font-size:.76rem;color:var(--tm-text-dim);">{{ res.reservation_time|time:"g:i A" }}</div>
+            </td>
+            <td style="text-align:center;color:var(--tm-text-muted);">{{ res.guest_count }}</td>
+            <td>
+              <select class="sort-select" style="padding:.3rem .6rem;font-size:.78rem;"
+                      onchange="updateStatus('{{ res.reservation_id }}', this.value)">
+                {% for val, label in status_choices %}
+                  <option value="{{ val }}" {% if res.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><a href="{% url 'reservation_detail' res.reservation_id %}" class="btn-action"><i class="bi bi-eye-fill"></i></a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--tm-text-dim);">No reservations found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if reservations.has_other_pages %}
+  <div class="tm-pagination">
+    {% if reservations.has_previous %}
+      <a href="{% querystring page=reservations.previous_page_number %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>
+    {% endif %}
+    {% for num in reservations.paginator.page_range %}
+      <a href="{% querystring page=num %}" class="page-btn {% if reservations.number == num %}active{% endif %}">{{ num }}</a>
+    {% endfor %}
+    {% if reservations.has_next %}
+      <a href="{% querystring page=reservations.next_page_number %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function updateStatus(reservationId, newStatus) {
+  try {
+    const res = await TM.post(`/dashboard/admin/reservations/${reservationId}/status/`, { status: newStatus });
+    if (res.success) Toast.success('Status updated');
+    else Toast.error('Update failed', res.error || '');
+  } catch(e) { Toast.error('Request failed'); }
+}
+</script>
+{% endblock %}

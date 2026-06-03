@@ -1,0 +1,170 @@
+{% extends "base.html" %} {% load static %} {% block title %}AI Recommendations
+· TableMaster{% endblock %} {% block content %}
+<section class="section-pad" style="min-height: 80vh">
+  <div class="container-xl">
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <div class="section-label">
+        <i class="bi bi-cpu-fill me-2 text-gold"></i>AI Results
+      </div>
+      <h2 class="section-title">
+        {{ recommendations.0.occasion_emoji }} Best Tables for Your {{
+        recommendations.0.occasion_label }}
+      </h2>
+      <p class="text-muted">
+        <i class="bi bi-calendar2-check me-1"></i>{{ date_display }}
+        &nbsp;·&nbsp; <i class="bi bi-people-fill me-1"></i>{{ members }}
+        guest{{ members|pluralize }} &nbsp; {% if city %}&nbsp;·&nbsp;<i
+          class="bi bi-geo-alt-fill me-1"
+        ></i
+        >{{ city }}{% endif %}
+      </p>
+    </div>
+
+    {% if recommendations %}
+    <div class="row g-4">
+      {% for rec in recommendations %}
+      <div class="col-lg-{% if forloop.first %}12{% else %}6{% endif %}">
+        <div
+          class="restaurant-card {% if forloop.first %}ai-top-pick{% endif %}"
+        >
+          {% if forloop.first %}
+          <div class="ai-pick-banner">
+            <i class="bi bi-cpu-fill me-2"></i>AI Top Pick · {{
+            rec.score|floatformat:0 }}% Match
+          </div>
+          {% endif %}
+
+          <div
+            class="rc-image-wrap"
+            style="height: {% if forloop.first %}320px{% else %}220px{% endif %}"
+          >
+            <img
+              src="{{ rec.restaurant.primary_image }}"
+              alt="{{ rec.restaurant.name }}"
+              class="rc-image"
+              loading="lazy"
+            />
+            <div class="rc-image-overlay"></div>
+            <div class="rc-badges">
+              {% if rec.restaurant.is_featured %}
+              <span class="rc-badge featured"
+                ><i class="bi bi-star-fill me-1"></i>Featured</span
+              >
+              {% endif %}
+              <span
+                class="rc-badge"
+                style="background: rgba(212, 175, 55, 0.85); color: #111"
+              >
+                <i class="bi bi-clock-fill me-1"></i>{{
+                rec.recommended_time_display }}
+              </span>
+            </div>
+            <div class="rc-price">{{ rec.restaurant.price_symbol }}</div>
+            <div class="rc-hover-info">
+              <div class="rhi-tags d-flex flex-wrap gap-1">
+                {% for cuisine in rec.restaurant.cuisine_types.all|slice:":3" %}
+                <span class="rhi-tag">{{ cuisine.name }}</span>
+                {% endfor %}
+              </div>
+              <a
+                href="{% url 'book_table' rec.restaurant.slug %}?date={{ reservation_date|date:'Y-m-d' }}&guests={{ members }}&time={{ rec.recommended_time_display }}"
+                class="btn btn-gold btn-sm mt-3 w-100"
+              >
+                Book This Table <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="rc-body">
+            <div
+              class="rc-header d-flex align-items-start justify-content-between mb-2"
+            >
+              <h3 class="rc-name">
+                <a href="{% url 'restaurant_detail' rec.restaurant.slug %}"
+                  >{{ rec.restaurant.name }}</a
+                >
+              </h3>
+              <div class="rc-rating">
+                <i class="bi bi-star-fill text-gold"></i>
+                <span>{{ rec.restaurant.avg_rating }}</span>
+              </div>
+            </div>
+
+            <!-- AI match reasons -->
+            <div class="ai-match-reasons mb-3">
+              {% for reason in rec.match_reasons %}
+              <span class="ai-reason-chip">
+                <i class="bi bi-check2-circle text-gold me-1"></i>{{ reason }}
+              </span>
+              {% endfor %}
+            </div>
+
+            <p class="rc-desc text-muted small mb-3">
+              {{ rec.restaurant.description|truncatechars:120 }}
+            </p>
+
+            <div
+              class="rc-footer d-flex align-items-center justify-content-between"
+            >
+              <div class="small">
+                <i class="bi bi-table text-gold me-1"></i>
+                {{ rec.available_table_count }} table{{
+                rec.available_table_count|pluralize }} available
+              </div>
+              <a
+                href="{% url 'book_table' rec.restaurant.slug %}?date={{ reservation_date|date:'Y-m-d' }}&guests={{ members }}"
+                class="btn btn-gold btn-sm"
+              >
+                Reserve <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- No results -->
+    <div class="text-center py-5">
+      <i class="bi bi-calendar-x display-1 text-muted d-block mb-3"></i>
+      <h4 class="text-muted">No tables found for this date</h4>
+      <p class="text-muted">Try a different date or adjust your guest count.</p>
+      <a href="{% url 'home' %}" class="btn btn-gold mt-2">Try Again</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  .ai-top-pick {
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.2),
+      0 12px 40px rgba(212, 175, 55, 0.1) !important;
+  }
+  .ai-pick-banner {
+    background: linear-gradient(135deg, #d4af37, #f4d675);
+    color: #111;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 8px 16px;
+    letter-spacing: 0.04em;
+  }
+  .ai-match-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ai-reason-chip {
+    font-size: 0.75rem;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 20px;
+    padding: 4px 10px;
+    color: #ccc;
+  }
+</style>
+{% endblock %}

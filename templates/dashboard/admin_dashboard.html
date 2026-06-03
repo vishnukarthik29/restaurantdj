@@ -1,0 +1,639 @@
+{% extends 'base.html' %} {% block title %}Admin Dashboard{% endblock %}
+<style>
+  /* ---------- Smooth Animations ---------- */
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  .fade-up:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .fade-up:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .fade-up:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+  .fade-up:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ---------- Cards ---------- */
+
+  .stat-card,
+  .tm-card {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .stat-card:hover,
+  .tm-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .stat-card {
+    height: 100%;
+  }
+
+  .tm-card {
+    height: 100%;
+  }
+
+  /* ---------- KPI Alignment ---------- */
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stat-icon {
+    flex-shrink: 0;
+  }
+
+  .stat-value {
+    line-height: 1;
+    word-break: break-word;
+  }
+
+  .stat-label,
+  .stat-change {
+    line-height: 1.4;
+  }
+
+  /* ---------- Tables ---------- */
+
+  .admin-table {
+    width: 100%;
+    vertical-align: middle;
+  }
+
+  .admin-table td,
+  .admin-table th {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .admin-table td:nth-child(2),
+  .admin-table td:nth-child(3) {
+    white-space: normal;
+  }
+
+  .admin-table tbody tr {
+    transition: background-color 0.2s ease;
+  }
+
+  .admin-table tbody tr:hover {
+    background: rgba(201, 146, 42, 0.05);
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .btn-action:hover {
+    transform: scale(1.08);
+  }
+
+  /* ---------- Navigation ---------- */
+
+  .btn-gold,
+  .btn-ghost,
+  .btn-outline-gold {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .btn-gold:hover,
+  .btn-ghost:hover,
+  .btn-outline-gold:hover {
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Top Restaurants ---------- */
+
+  .tm-card-body > div {
+    transition:
+      padding-left 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .tm-card-body > div:hover {
+    padding-left: 0.4rem;
+  }
+
+  /* ---------- Headers ---------- */
+
+  .tm-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- Large Tablets ---------- */
+
+  @media (max-width: 1199px) {
+    .stat-value {
+      font-size: 1.6rem;
+    }
+
+    .admin-table {
+      min-width: 800px;
+    }
+  }
+
+  /* ---------- Tablets ---------- */
+
+  @media (max-width: 991px) {
+    .container-xl {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .tm-card {
+      margin-bottom: 1rem;
+    }
+
+    .d-flex.justify-content-between.align-items-center.mb-3 {
+      align-items: flex-start !important;
+    }
+
+    h1 {
+      font-size: 1.7rem !important;
+    }
+
+    .admin-table {
+      min-width: 760px;
+    }
+  }
+
+  /* ---------- Mobile ---------- */
+
+  @media (max-width: 767px) {
+    .container-xl {
+      padding-left: 0.85rem;
+      padding-right: 0.85rem;
+    }
+
+    h1 {
+      font-size: 1.45rem !important;
+      line-height: 1.3;
+    }
+
+    .stat-card {
+      padding: 1rem;
+      gap: 0.85rem;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+    }
+
+    .tm-card-header h5 {
+      font-size: 1rem !important;
+    }
+
+    .btn-gold,
+    .btn-ghost,
+    .btn-outline-gold {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .table-responsive {
+      border-radius: 12px;
+    }
+
+    .admin-table td,
+    .admin-table th {
+      font-size: 0.82rem;
+    }
+  }
+
+  /* ---------- Small Mobile ---------- */
+
+  @media (max-width: 575px) {
+    .container-xl {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    .stat-card {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+    }
+
+    .stat-change {
+      font-size: 0.75rem;
+    }
+
+    .tm-card-body {
+      padding: 0.9rem;
+    }
+
+    .tm-card-header {
+      padding: 0.9rem;
+    }
+
+    .admin-table td,
+    .admin-table th {
+      padding: 0.65rem;
+    }
+  }
+
+  /* ---------- Ultra Small ---------- */
+
+  @media (max-width: 380px) {
+    h1 {
+      font-size: 1.25rem !important;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+    }
+
+    .btn-gold,
+    .btn-ghost,
+    .btn-outline-gold {
+      font-size: 0.75rem !important;
+    }
+  }
+
+  /* ---------- Reduced Motion ---------- */
+
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up,
+    .stat-card,
+    .tm-card,
+    .btn-gold,
+    .btn-ghost,
+    .btn-outline-gold,
+    .btn-action {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const counters = document.querySelectorAll("[data-count]");
+
+    counters.forEach((counter) => {
+      const target = parseInt(counter.dataset.count || 0, 10);
+
+      if (isNaN(target)) return;
+
+      let current = 0;
+      const duration = 1200;
+      const increment = Math.max(1, Math.ceil(target / 60));
+
+      const update = () => {
+        current += increment;
+
+        if (current >= target) {
+          counter.textContent = target.toLocaleString();
+          return;
+        }
+
+        counter.textContent = current.toLocaleString();
+        requestAnimationFrame(update);
+      };
+
+      update();
+    });
+  });
+</script>
+{% block content %}
+<div class="container-xl py-5" style="padding-top: 5.5rem !important">
+  <div
+    class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"
+  >
+    <div>
+      <h1
+        style="
+          font-family: var(--font-display);
+          font-size: 2rem;
+          color: var(--tm-cream);
+          margin: 0;
+        "
+      >
+        Admin Dashboard
+      </h1>
+      <p style="color: var(--tm-text-muted); font-size: 0.875rem; margin: 0">
+        System overview
+      </p>
+    </div>
+    <a href="{% url 'customer_dashboard' %}" class="btn-ghost"
+      ><i class="bi bi-person"></i> My Account</a
+    >
+  </div>
+
+  <!-- Nav pills -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap">
+    <a
+      href="{% url 'admin_dashboard' %}"
+      class="btn-gold"
+      style="padding: 0.4rem 1rem; font-size: 0.82rem"
+      >Overview</a
+    >
+    <a
+      href="{% url 'admin_restaurants' %}"
+      class="btn-ghost"
+      style="padding: 0.4rem 1rem; font-size: 0.82rem"
+      ><i class="bi bi-building"></i> Restaurants</a
+    >
+    <a
+      href="{% url 'admin_reservations' %}"
+      class="btn-ghost"
+      style="padding: 0.4rem 1rem; font-size: 0.82rem"
+      ><i class="bi bi-calendar3"></i> Reservations</a
+    >
+    <a
+      href="{% url 'admin_users' %}"
+      class="btn-ghost"
+      style="padding: 0.4rem 1rem; font-size: 0.82rem"
+      ><i class="bi bi-people-fill"></i> Users</a
+    >
+    <a
+      href="{% url 'admin_analytics' %}"
+      class="btn-ghost"
+      style="padding: 0.4rem 1rem; font-size: 0.82rem"
+      ><i class="bi bi-graph-up"></i> Analytics</a
+    >
+  </div>
+
+  {% if messages %}{% for m in messages %}
+  <div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>
+  {% endfor %}{% endif %}
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon gold"><i class="bi bi-building"></i></div>
+        <div>
+          <div class="stat-value" data-count="{{ stats.total_restaurants }}">
+            {{ stats.total_restaurants }}
+          </div>
+          <div class="stat-label">Active Restaurants</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div>
+          <div class="stat-value" data-count="{{ stats.total_reservations }}">
+            {{ stats.total_reservations }}
+          </div>
+          <div class="stat-label">Total Reservations</div>
+          <div class="stat-change up">{{ stats.today_reservations }} today</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <div class="stat-value" data-count="{{ stats.total_users }}">
+            {{ stats.total_users }}
+          </div>
+          <div class="stat-label">Customers</div>
+          <div class="stat-change up">{{ stats.new_users_week }} this week</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+          <div class="stat-value" data-count="{{ stats.pending_reservations }}">
+            {{ stats.pending_reservations }}
+          </div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Recent reservations -->
+    <div class="col-lg-8 fade-up">
+      <div class="tm-card">
+        <div
+          class="tm-card-header d-flex justify-content-between align-items-center"
+        >
+          <h5
+            style="
+              font-family: var(--font-display);
+              font-size: 1.1rem;
+              color: var(--tm-cream);
+              margin: 0;
+            "
+          >
+            Recent Reservations
+          </h5>
+          <a href="{% url 'admin_reservations' %}" style="font-size: 0.8rem"
+            >Manage all</a
+          >
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Restaurant</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for res in recent_reservations %}
+              <tr>
+                <td style="color: var(--tm-gold); font-size: 0.8rem">
+                  {{ res.reservation_id }}
+                </td>
+                <td>{{ res.customer_name }}</td>
+                <td>{{ res.restaurant.name }}</td>
+                <td>
+                  {{ res.reservation_date|date:"N j" }} {{
+                  res.reservation_time|time:"g:i A" }}
+                </td>
+                <td>
+                  <span
+                    class="tm-badge {% if res.status == 'confirmed' %}tm-badge-green{% elif res.status == 'pending' %}tm-badge-amber{% elif res.status == 'cancelled' %}tm-badge-red{% else %}tm-badge-blue{% endif %}"
+                    >{{ res.get_status_display }}</span
+                  >
+                </td>
+                <td>
+                  <a
+                    href="{% url 'reservation_detail' res.reservation_id %}"
+                    class="btn-action"
+                    ><i class="bi bi-eye-fill"></i
+                  ></a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td
+                  colspan="6"
+                  style="
+                    text-align: center;
+                    color: var(--tm-text-dim);
+                    padding: 2rem;
+                  "
+                >
+                  No reservations yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top restaurants -->
+    <div class="col-lg-4">
+      <div class="tm-card fade-up">
+        <div class="tm-card-header">
+          <h5
+            style="
+              font-family: var(--font-display);
+              font-size: 1.1rem;
+              color: var(--tm-cream);
+              margin: 0;
+            "
+          >
+            Top Restaurants
+          </h5>
+        </div>
+        <div class="tm-card-body">
+          {% for r in top_restaurants %}
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 0.6rem 0;
+              border-bottom: 1px solid rgba(201, 146, 42, 0.08);
+            "
+          >
+            <div>
+              <div
+                style="
+                  font-size: 0.875rem;
+                  font-weight: 500;
+                  color: var(--tm-cream);
+                "
+              >
+                {{ r.name }}
+              </div>
+              <div style="font-size: 0.76rem; color: var(--tm-text-dim)">
+                {{ r.reservation_count }} reservations
+              </div>
+            </div>
+            <div
+              style="
+                color: var(--tm-gold);
+                font-size: 0.85rem;
+                font-weight: 600;
+              "
+            >
+              ★ {{ r.avg_rating|floatformat:1 }}
+            </div>
+          </div>
+          {% empty %}
+          <div
+            style="
+              color: var(--tm-text-dim);
+              font-size: 0.875rem;
+              text-align: center;
+            "
+          >
+            No data.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="tm-card mt-3 fade-up">
+        <div class="tm-card-header">
+          <h5
+            style="
+              font-family: var(--font-display);
+              font-size: 1.1rem;
+              color: var(--tm-cream);
+              margin: 0;
+            "
+          >
+            Quick Links
+          </h5>
+        </div>
+        <div class="tm-card-body d-flex flex-column gap-2">
+          <a
+            href="{% url 'admin_reservations' %}?status=pending"
+            class="btn-outline-gold w-100"
+            style="font-size: 0.82rem"
+          >
+            <i class="bi bi-hourglass-split"></i> Pending ({{
+            stats.pending_reservations }})
+          </a>
+          <a
+            href="/admin/"
+            class="btn-ghost w-100"
+            style="font-size: 0.82rem"
+            target="_blank"
+          >
+            <i class="bi bi-gear-fill"></i> Django Admin
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

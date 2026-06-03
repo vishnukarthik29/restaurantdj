@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load tm_tags %}
+{% block title %}Manage Restaurants{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">Restaurants</h1>
+      <p style="color:var(--tm-text-muted);font-size:.875rem;margin:0;">{{ total_count }} total</p>
+    </div>
+    <a href="/admin/restaurants/restaurant/add/" target="_blank" class="btn-gold"><i class="bi bi-plus-lg"></i> Add Restaurant</a>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.75rem;flex-wrap:wrap;">
+    <a href="{% url 'admin_dashboard' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;">Overview</a>
+    <a href="{% url 'admin_restaurants' %}" class="btn-gold" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-building"></i> Restaurants</a>
+    <a href="{% url 'admin_reservations' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-calendar3"></i> Reservations</a>
+    <a href="{% url 'admin_users' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-people-fill"></i> Users</a>
+    <a href="{% url 'admin_analytics' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-graph-up"></i> Analytics</a>
+  </div>
+
+  <form method="get" class="mb-3">
+    <div class="row g-2">
+      <div class="col-md-5">
+        <div class="tm-input-group">
+          <i class="bi bi-search input-icon"></i>
+          <input type="text" name="q" value="{{ request.GET.q }}" class="tm-input" placeholder="Search by name or city…">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select name="status" class="tm-select">
+          <option value="">All Statuses</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn-outline-gold" style="height:43px;">Filter</button>
+        <a href="{% url 'admin_restaurants' %}" class="btn-ghost" style="height:43px;padding:.6rem .9rem;margin-left:.4rem;">Clear</a>
+      </div>
+    </div>
+  </form>
+
+  <div class="tm-card">
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead><tr><th>Restaurant</th><th>City</th><th>Cuisine</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for r in restaurants %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <img src="{{ r.primary_image }}" style="width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid var(--tm-border);" onerror="this.style.display='none'">
+                <div>
+                  <div style="font-weight:600;color:var(--tm-cream);">{{ r.name }}</div>
+                  <div style="font-size:.76rem;color:var(--tm-text-dim);">{{ r.slug }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="color:var(--tm-text-muted);">{{ r.city }}</td>
+            <td>
+              {% for c in r.cuisine_types.all|slice:":2" %}
+                <span class="cuisine-tag" style="font-size:.7rem;">{{ c.name }}</span>
+              {% endfor %}
+            </td>
+            <td><span style="color:var(--tm-gold);">★ {{ r.avg_rating|floatformat:1 }}</span> <span style="font-size:.76rem;color:var(--tm-text-dim);">({{ r.total_reviews }})</span></td>
+            <td><span class="tm-badge {% if r.status == 'active' %}tm-badge-green{% elif r.status == 'pending' %}tm-badge-amber{% else %}tm-badge-red{% endif %}">{{ r.get_status_display }}</span></td>
+            <td>
+              <div class="actions-cell">
+                <a href="{% url 'restaurant_detail' r.slug %}" class="btn-action" title="View" target="_blank"><i class="bi bi-eye-fill"></i></a>
+                <a href="/admin/restaurants/restaurant/{{ r.pk }}/change/" class="btn-action" title="Edit" target="_blank"><i class="bi bi-pencil-fill"></i></a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--tm-text-dim);">No restaurants yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if restaurants.has_other_pages %}
+  <div class="tm-pagination">
+    {% if restaurants.has_previous %}<a href="{% querystring page=restaurants.previous_page_number %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>{% endif %}
+    {% for num in restaurants.paginator.page_range %}<a href="{% querystring page=num %}" class="page-btn {% if restaurants.number == num %}active{% endif %}">{{ num }}</a>{% endfor %}
+    {% if restaurants.has_next %}<a href="{% querystring page=restaurants.next_page_number %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

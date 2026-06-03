@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Booking Confirmed — {{ reservation.reservation_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="padding-top:6rem!important;">
+  <div class="text-center mb-4">
+    <div style="font-size:3.5rem;margin-bottom:.5rem;animation:bounce-in .6s ease;">🎉</div>
+    <h1 style="font-family:var(--font-display);font-size:2.5rem;color:var(--tm-cream);margin-bottom:.3rem;">Booking Confirmed!</h1>
+    <p style="color:var(--tm-text-muted);">Your table is reserved. We look forward to welcoming you.</p>
+  </div>
+
+  <div class="confirmation-card">
+    <div class="confirmation-header">
+      <div class="confirmation-icon">✓</div>
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tm-text-dim);margin-bottom:.4rem;">Reservation ID</div>
+      <div class="reservation-id">{{ reservation.reservation_id }}</div>
+      <div class="mt-2">
+        <span class="tm-badge {% if reservation.status == 'confirmed' %}tm-badge-green{% elif reservation.status == 'pending' %}tm-badge-amber{% else %}tm-badge-gold{% endif %}">
+          {{ reservation.get_status_display }}
+        </span>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-item"><label>Restaurant</label><value>{{ reservation.restaurant.name }}</value></div>
+      <div class="detail-item">
+        <label>Location</label>
+        <value>{{ reservation.restaurant.city }}{% if reservation.restaurant.neighborhood %}, {{ reservation.restaurant.neighborhood }}{% endif %}</value>
+      </div>
+      <div class="detail-item"><label>Date</label><value>{{ reservation.reservation_date|date:"l, N j, Y" }}</value></div>
+      <div class="detail-item"><label>Time</label><value>{{ reservation.reservation_time|time:"g:i A" }}</value></div>
+      <div class="detail-item"><label>Guests</label><value>{{ reservation.guest_count }} guest{{ reservation.guest_count|pluralize }}</value></div>
+      <div class="detail-item">
+        <label>Assigned Table</label>
+        <value>{% if reservation.table %}Table {{ reservation.table.table_number }} — {{ reservation.table.get_table_type_display }}{% else %}To be assigned{% endif %}</value>
+      </div>
+      <div class="detail-item"><label>Customer Name</label><value>{{ reservation.customer_name }}</value></div>
+      <div class="detail-item"><label>Email</label><value>{{ reservation.customer_email }}</value></div>
+      <div class="detail-item"><label>Phone</label><value>{{ reservation.customer_phone }}</value></div>
+      {% if reservation.customer_whatsapp %}
+      <div class="detail-item"><label>WhatsApp</label><value>{{ reservation.customer_whatsapp }}</value></div>
+      {% endif %}
+    </div>
+
+    {% if reservation.special_requests %}
+    <div style="padding:0 1.75rem 1.5rem;">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tm-text-dim);margin-bottom:.4rem;">Special Requests</div>
+      <div style="font-size:.9rem;color:var(--tm-text-muted);background:var(--tm-surface-2);border:1px solid var(--tm-border);border-radius:10px;padding:.85rem 1rem;">
+        {{ reservation.special_requests }}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if ai_recommendation %}
+    <div style="padding:0 1.75rem 1.5rem;">
+      <div class="ai-panel">
+        <div class="ai-panel-title"><span class="ai-spark">✦</span> AI Recommendation Applied</div>
+        <div style="font-size:.875rem;color:var(--tm-text-muted);">
+          Match score: <strong style="color:var(--tm-gold);">{% widthratio ai_recommendation.overall_score 1 100 %}%</strong>
+          &nbsp;·&nbsp; Confidence: <strong style="color:var(--tm-gold);">{{ ai_recommendation.confidence_label }}</strong>
+        </div>
+        {% if ai_recommendation.reasoning.overall %}
+        <div class="ai-reasoning mt-2">{{ ai_recommendation.reasoning.overall }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="padding:1.25rem 1.75rem 1.75rem;display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;border-top:1px solid var(--tm-border);">
+      <a href="{% url 'reservation_detail' reservation.reservation_id %}" class="btn-outline-gold">
+        <i class="bi bi-eye"></i> View Reservation
+      </a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'customer_dashboard' %}" class="btn-ghost"><i class="bi bi-grid"></i> Dashboard</a>
+      {% endif %}
+      <a href="{% url 'restaurant_list' %}" class="btn-ghost"><i class="bi bi-search"></i> Find More</a>
+      {% if reservation.can_cancel %}
+      <form method="post" action="{% url 'cancel_reservation' reservation.reservation_id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger-tm" data-cancel-reservation>
+          <i class="bi bi-x-circle"></i> Cancel
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="max-width:700px;margin:3rem auto 0;text-align:center;">
+    <h3 style="font-family:var(--font-display);font-size:1.4rem;color:var(--tm-cream);margin-bottom:2rem;">What happens next?</h3>
+    <div class="row g-3">
+      <div class="col-sm-4">
+        <div class="tm-card tm-card-body text-center">
+          <div style="font-size:2rem;margin-bottom:.75rem;">📧</div>
+          <div style="font-weight:600;color:var(--tm-cream);font-size:.9rem;">Confirmation Email</div>
+          <div style="font-size:.8rem;color:var(--tm-text-muted);margin-top:.3rem;">Sent to {{ reservation.customer_email }}</div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="tm-card tm-card-body text-center">
+          <div style="font-size:2rem;margin-bottom:.75rem;">⏰</div>
+          <div style="font-weight:600;color:var(--tm-cream);font-size:.9rem;">Reminder 24hrs Before</div>
+          <div style="font-size:.8rem;color:var(--tm-text-muted);margin-top:.3rem;">We'll remind you the day before</div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="tm-card tm-card-body text-center">
+          <div style="font-size:2rem;margin-bottom:.75rem;">🍽️</div>
+          <div style="font-weight:600;color:var(--tm-cream);font-size:.9rem;">Arrive & Enjoy</div>
+          <div style="font-size:.8rem;color:var(--tm-text-muted);margin-top:.3rem;">Show your Reservation ID</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes bounce-in { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.2);opacity:1} 100%{transform:scale(1);} }
+</style>
+{% endblock %}

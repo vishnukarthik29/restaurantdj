@@ -1,0 +1,1206 @@
+{% extends "base.html" %} {% load static %} {% block title %}TableMaster{%
+endblock %} {% block body_class %}home-page{% endblock %} {% block navbar_class
+%}navbar-transparent{% endblock %} {% block content %} {% block extra_head %}
+<style>
+  /* SEARCH SECTION PREMIUM DESIGN */
+
+  .search-section {
+    position: relative;
+    margin-top: -80px;
+    z-index: 20;
+  }
+
+  .search-card {
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 2rem;
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.03);
+  }
+
+  .search-tabs {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    padding: 5px;
+  }
+
+  .search-tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #aaa;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+
+  .search-tab.active {
+    background: linear-gradient(135deg, #d4af37, #f4d675);
+    color: #111;
+  }
+
+  .search-panel {
+    margin-top: 1.75rem;
+  }
+
+  .search-field {
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    transform: translateY(-50%);
+    z-index: 5;
+    color: #d4af37;
+  }
+
+  .search-input {
+    height: 62px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    padding-left: 50px;
+  }
+
+  .search-input:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .search-btn {
+    height: 62px;
+    border-radius: 16px;
+    font-weight: 600;
+  }
+
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .filter-chip:hover {
+    transform: translateY(-2px);
+    border-color: #d4af37;
+  }
+
+  .filter-chip input {
+    display: none;
+  }
+
+  @media (max-width: 991px) {
+    .search-section {
+      margin-top: -50px;
+    }
+
+    .search-card {
+      padding: 1.5rem;
+      border-radius: 24px;
+    }
+
+    .search-input,
+    .search-btn {
+      height: 56px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .search-section {
+      margin-top: -30px;
+    }
+
+    .search-card {
+      padding: 1.25rem;
+    }
+
+    .search-tabs {
+      margin-bottom: 1rem;
+    }
+
+    .search-tab {
+      font-size: 0.9rem;
+      padding: 12px;
+    }
+
+    .search-input,
+    .search-btn {
+      height: 54px;
+    }
+  }
+  /* =========================
+   Layout Fixes
+========================= */
+
+  .featured-section {
+    overflow: hidden;
+  }
+
+  .restaurant-card-wrap {
+    display: flex;
+  }
+
+  /* =========================
+   Restaurant Card
+========================= */
+
+  .restaurant-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #1c0a00;
+
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.8),
+      0 4px 15px rgba(0, 0, 0, 0.06);
+
+    transition: all 0.3s ease;
+  }
+
+  .restaurant-card:hover {
+    transform: translateY(-6px);
+    border-color: #d1d5db;
+    border-radius: 20px;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.9),
+      0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+  /* =========================
+   Equal Image Height
+========================= */
+
+  .rc-image-wrap {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .rc-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .restaurant-card:hover .rc-image {
+    transform: scale(1.05);
+  }
+
+  /* =========================
+   Card Body Alignment
+========================= */
+
+  .rc-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 20px;
+  }
+
+  .rc-header {
+    min-height: 65px;
+  }
+
+  .rc-name {
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .rc-name a {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .rc-rating {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* =========================
+   Meta Section
+========================= */
+
+  .rc-meta {
+    min-height: 28px;
+    flex-wrap: wrap;
+  }
+
+  .rc-location,
+  .rc-reviews {
+    display: flex;
+    align-items: center;
+  }
+
+  /* =========================
+   Description
+========================= */
+
+  .rc-desc {
+    flex-grow: 1;
+    line-height: 1.7;
+    min-height: 70px;
+    margin-bottom: 1rem;
+  }
+
+  /* =========================
+   Footer Alignment
+========================= */
+
+  .rc-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .rc-hours,
+  .rc-tables {
+    display: flex;
+    align-items: center;
+  }
+
+  /* =========================
+   Hover Overlay Alignment
+========================= */
+
+  .rc-hover-info {
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+  }
+
+  .rhi-tags {
+    min-height: 32px;
+  }
+
+  /* =========================
+   Badges
+========================= */
+
+  .rc-badge {
+    border-radius: 30px;
+  }
+
+  /* =========================
+   Price Badge
+========================= */
+
+  .rc-price {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+  }
+
+  /* =========================
+   Desktop
+========================= */
+
+  @media (min-width: 1200px) {
+    .rc-image-wrap {
+      height: 280px;
+    }
+  }
+
+  /* =========================
+   Tablet
+========================= */
+
+  @media (max-width: 991.98px) {
+    .rc-image-wrap {
+      height: 240px;
+    }
+
+    .rc-body {
+      padding: 18px;
+    }
+
+    .rc-header {
+      min-height: auto;
+    }
+  }
+
+  /* =========================
+   Mobile
+========================= */
+
+  @media (max-width: 767.98px) {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 15px;
+    }
+
+    .section-header .btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .rc-image-wrap {
+      height: 220px;
+    }
+
+    .rc-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 10px;
+    }
+
+    .rc-rating {
+      align-self: flex-start;
+    }
+
+    .rc-footer {
+      flex-direction: column;
+      align-items: flex-start !important;
+    }
+
+    .rc-desc {
+      min-height: auto;
+    }
+  }
+
+  /* =========================
+   Small Mobile
+========================= */
+
+  @media (max-width: 575.98px) {
+    .featured-section {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .rc-image-wrap {
+      height: 200px;
+    }
+
+    .rc-body {
+      padding: 15px;
+    }
+
+    .rc-meta {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 6px !important;
+    }
+
+    .rc-price {
+      font-size: 13px;
+    }
+
+    .rc-badge {
+      font-size: 11px;
+      padding: 5px 10px;
+    }
+
+    .restaurant-card {
+      border-radius: 14px;
+    }
+  }
+</style>
+{% endblock %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="hero-bg">
+    <div class="hero-overlay"></div>
+    <div class="hero-particles"></div>
+  </div>
+
+  <div class="container-xl hero-content">
+    <div class="row align-items-center min-vh-100">
+      <div class="col-lg-7">
+        <div class="hero-badge animate-slide-up">
+          <i class="bi bi-cpu-fill me-2"></i>AI-Powered Reservations
+        </div>
+        <h1 class="hero-title animate-slide-up delay-1">
+          Dine at the<br />
+          <em>Perfect Table</em><br />
+          Every Time
+        </h1>
+        <p class="hero-subtitle animate-slide-up delay-2">
+          Our AI analyzes your preferences, party size, and dining history to
+          recommend the ideal table — instantly, intelligently, effortlessly.
+        </p>
+        <div class="hero-cta d-flex gap-3 flex-wrap animate-slide-up delay-3">
+          <a
+            href="{% url 'restaurant_list' %}"
+            class="btn btn-gold btn-lg px-5"
+          >
+            <i class="bi bi-search me-2"></i>Find Restaurants
+          </a>
+          <a href="#search-section" class="btn btn-outline-light btn-lg px-5">
+            Book a Table <i class="bi bi-arrow-down ms-2"></i>
+          </a>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="hero-stats d-flex gap-4 mt-5 animate-slide-up delay-4">
+          <div class="hero-stat">
+            <div class="stat-num">{{ stats.restaurants }}+</div>
+            <div class="stat-label">Restaurants</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <div class="stat-num">{{ stats.cities }}+</div>
+            <div class="stat-label">Cities</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <div class="stat-num">
+              {{ stats.happy_customers|default:"1K" }}+
+            </div>
+            <div class="stat-label">Happy Guests</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <div class="stat-num">4.9★</div>
+            <div class="stat-label">Avg Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero card visual -->
+      <div class="col-lg-5 d-none d-lg-flex justify-content-end animate-float">
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <div class="hc-label">
+              <i class="bi bi-cpu-fill"></i> AI Recommendation
+            </div>
+            <span class="hc-badge">98% Match</span>
+          </div>
+          <div class="hc-restaurant">
+            <img
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=200&fit=crop"
+              alt=""
+              class="hc-img"
+            />
+            <div class="hc-overlay">
+              <div class="hc-name">La Maison Dorée</div>
+              <div class="hc-meta">
+                <span><i class="bi bi-star-fill"></i> 4.9</span>
+                <span><i class="bi bi-geo-alt-fill"></i> South Mumbai</span>
+              </div>
+            </div>
+          </div>
+          <div class="hc-table-info">
+            <div class="hct-item">
+              <i class="bi bi-table text-gold"></i
+              ><span>Table 12 · Window View</span>
+            </div>
+            <div class="hct-item">
+              <i class="bi bi-people-fill text-gold"></i
+              ><span>4 Guests · Private Section</span>
+            </div>
+            <div class="hct-item">
+              <i class="bi bi-clock-fill text-gold"></i
+              ><span>Tonight · 8:00 PM</span>
+            </div>
+          </div>
+          <button class="btn btn-gold w-100 mt-3">
+            <i class="bi bi-check2-circle me-2"></i>Confirm Reservation
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator">
+    <div class="scroll-dot"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SMART SEARCH SECTION
+═══════════════════════════════════════════════════════════ -->
+<section class="search-section" id="search-section">
+  <div class="container-xl">
+    <div class="search-card">
+      <div class="search-tabs d-flex gap-0 mb-4">
+        <button class="search-tab active" data-tab="quick">Quick Search</button>
+        <button class="search-tab" data-tab="advanced">Advanced</button>
+      </div>
+
+      <!-- Quick Search -->
+      <div class="search-panel active" id="tab-quick">
+        <form
+          action="{% url 'restaurant_list' %}"
+          method="GET"
+          class="search-form"
+        >
+          <div class="row g-3">
+            <div class="col-lg-4">
+              <div class="search-field">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                  type="text"
+                  name="q"
+                  class="form-control search-input"
+                  placeholder="Restaurant, cuisine, or keyword..."
+                  value="{{ request.GET.q }}"
+                />
+              </div>
+            </div>
+            <div class="col-lg-3">
+              <div class="search-field">
+                <i class="bi bi-geo-alt-fill search-icon"></i>
+                <input
+                  type="text"
+                  name="city"
+                  class="form-control search-input"
+                  placeholder="City or area"
+                  value="{{ request.GET.city }}"
+                  list="cities-list"
+                />
+                <datalist id="cities-list">
+                  {% for city in cities %}
+                  <option value="{{ city.city }}">{% endfor %}</option>
+                </datalist>
+              </div>
+            </div>
+            <div class="col-lg-2">
+              <div class="search-field">
+                <i class="bi bi-calendar-event search-icon"></i>
+                <input
+                  type="date"
+                  name="date"
+                  class="form-control search-input"
+                  placeholder="Date"
+                  id="heroDate"
+                />
+              </div>
+            </div>
+            <div class="col-lg-1">
+              <div class="search-field">
+                <i class="bi bi-people-fill search-icon"></i>
+                <input
+                  type="number"
+                  name="guests"
+                  class="form-control search-input"
+                  placeholder="Guests"
+                  min="1"
+                  max="50"
+                  value="2"
+                />
+              </div>
+            </div>
+            <div class="col-lg-2">
+              <button type="submit" class="btn btn-gold w-100 search-btn">
+                <i class="bi bi-search me-2"></i>Search
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Advanced Search -->
+      <div class="search-panel" id="tab-advanced">
+        <form action="{% url 'restaurant_list' %}" method="GET">
+          <div class="row g-3">
+            <div class="col-lg-3">
+              <div class="search-field">
+                <i class="bi bi-search search-icon"></i>
+                <input
+                  type="text"
+                  name="q"
+                  class="form-control search-input"
+                  placeholder="Restaurant name..."
+                />
+              </div>
+            </div>
+            <div class="col-lg-2">
+              <select name="cuisine" class="form-select search-input">
+                <option value="">All Cuisines</option>
+                {% for cuisine in cuisine_types %}
+                <option value="{{ cuisine.slug }}">
+                  {{ cuisine.icon }} {{ cuisine.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-lg-2">
+              <select name="price" class="form-select search-input">
+                <option value="">Any Price</option>
+                <option value="budget">$ Budget</option>
+                <option value="mid">$$ Mid-Range</option>
+                <option value="fine">$$$ Fine Dining</option>
+                <option value="luxury">$$$$ Luxury</option>
+              </select>
+            </div>
+            <div class="col-lg-2">
+              <select name="rating" class="form-select search-input">
+                <option value="">Any Rating</option>
+                <option value="4.5">4.5+ ★★★★½</option>
+                <option value="4">4+ ★★★★</option>
+                <option value="3.5">3.5+ ★★★½</option>
+                <option value="3">3+ ★★★</option>
+              </select>
+            </div>
+            <div class="col-lg-2">
+              <select name="sort" class="form-select search-input">
+                <option value="featured">Featured</option>
+                <option value="rating">Highest Rated</option>
+                <option value="reviews">Most Reviewed</option>
+                <option value="newest">Newest</option>
+                <option value="name">A → Z</option>
+              </select>
+            </div>
+            <div class="col-lg-1">
+              <button type="submit" class="btn btn-gold w-100">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Feature checkboxes -->
+          <div class="d-flex flex-wrap gap-3 mt-3">
+            {% for cuisine in cuisine_types|slice:":5" %} {% endfor %}
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="parking" />
+              <i class="bi bi-p-circle"></i> Parking</label
+            >
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="wifi" />
+              <i class="bi bi-wifi"></i> WiFi</label
+            >
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="outdoor" />
+              <i class="bi bi-tree"></i> Outdoor</label
+            >
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="private" />
+              <i class="bi bi-door-closed"></i> Private Dining</label
+            >
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="accessible" />
+              <i class="bi bi-person-wheelchair"></i> Accessible</label
+            >
+            <label class="filter-chip"
+              ><input type="checkbox" name="features" value="kid_friendly" />
+              <i class="bi bi-emoji-smile"></i> Kid-Friendly</label
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CUISINE TYPES
+═══════════════════════════════════════════════════════════ -->
+<section class="cuisine-section section-pad">
+  <div class="container-xl">
+    <div class="section-header text-center mb-5">
+      <div class="section-label">Browse by Cuisine</div>
+      <h2 class="section-title">What Are You Craving?</h2>
+    </div>
+    <div class="cuisine-scroll">
+      <div class="row g-3 justify-content-center">
+        {% for cuisine in cuisine_types %}
+        <div class="col-auto">
+          <a
+            href="{% url 'restaurant_list' %}?cuisine={{ cuisine.slug }}"
+            class="cuisine-pill"
+          >
+            <span class="cuisine-emoji">{{ cuisine.icon }}</span>
+            <span class="cuisine-name">{{ cuisine.name }}</span>
+            {% if cuisine.restaurant_count %}
+            <span class="cuisine-count">{{ cuisine.restaurant_count }}</span>
+            {% endif %}
+          </a>
+        </div>
+        {% empty %}
+        <!-- Default cuisines if none in DB -->
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🍛 Indian</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🍕 Italian</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🍣 Japanese</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🥩 Steakhouse</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🥗 Mediterranean</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🌮 Mexican</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🍜 Chinese</span>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="cuisine-pill">
+            <span class="cuisine-name">🥐 French</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FEATURED RESTAURANTS
+═══════════════════════════════════════════════════════════ -->
+<section class="featured-section section-pad" id="featured">
+  <div class="container-xl">
+    <div
+      class="section-header d-flex align-items-end justify-content-between mb-5"
+    >
+      <div>
+        <div class="section-label">Hand-Picked Experiences</div>
+        <h2 class="section-title mb-0">Featured Restaurants</h2>
+      </div>
+      <a href="{% url 'restaurant_list' %}" class="btn btn-outline-gold">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for restaurant in featured_restaurants %}
+      <div class="col-xl-4 col-lg-6 restaurant-card-wrap animate-on-scroll">
+        <div class="restaurant-card">
+          <!-- Image -->
+          <div class="rc-image-wrap">
+            <img
+              src="{{ restaurant.primary_image }}"
+              alt="{{ restaurant.name }}"
+              class="rc-image"
+              loading="lazy"
+            />
+            <div class="rc-image-overlay"></div>
+
+            <!-- Badges -->
+            <div class="rc-badges">
+              {% if restaurant.is_featured %}
+              <span class="rc-badge featured"
+                ><i class="bi bi-star-fill me-1"></i>Featured</span
+              >
+              {% endif %} {% if restaurant.is_verified %}
+              <span class="rc-badge verified"
+                ><i class="bi bi-patch-check-fill me-1"></i>Verified</span
+              >
+              {% endif %}
+            </div>
+
+            <!-- Price range -->
+            <div class="rc-price">{{ restaurant.price_symbol }}</div>
+
+            <!-- Quick info overlay -->
+            <div class="rc-hover-info">
+              <div class="rhi-tags d-flex flex-wrap gap-1">
+                {% for cuisine in restaurant.cuisine_types.all|slice:":3" %}
+                <span class="rhi-tag">{{ cuisine.name }}</span>
+                {% endfor %}
+              </div>
+              <a
+                href="{% url 'book_table' restaurant.slug %}"
+                class="btn btn-gold btn-sm mt-3 w-100"
+              >
+                Reserve Now <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="rc-body">
+            <div
+              class="rc-header d-flex align-items-start justify-content-between mb-2"
+            >
+              <h3 class="rc-name">
+                <a href="{% url 'restaurant_detail' restaurant.slug %}"
+                  >{{ restaurant.name }}</a
+                >
+              </h3>
+              <div class="rc-rating">
+                <i class="bi bi-star-fill text-gold"></i>
+                <span>{{ restaurant.avg_rating }}</span>
+              </div>
+            </div>
+
+            <div class="rc-meta d-flex align-items-center gap-3 mb-3">
+              <span class="rc-location">
+                <i class="bi bi-geo-alt-fill text-gold"></i>{{ restaurant }}
+              </span>
+              <span class="rc-reviews text-muted small">
+                {{ restaurant.total_reviews }} reviews
+              </span>
+            </div>
+
+            <p class="rc-desc text-muted small mb-3">
+              {{ restaurant.description|truncatechars:100 }}
+            </p>
+
+            <div
+              class="rc-footer d-flex align-items-center justify-content-between"
+            >
+              <div class="rc-hours small">
+                <i class="bi bi-clock text-gold me-1"></i>
+                {% if restaurant.is_currently_open %}
+                <span class="text-success fw-600">Open Now</span>
+                <span class="text-muted">
+                  · Until {{ restaurant.closing_time|time:"g:i A" }}</span
+                >
+                {% else %}
+                <span class="text-danger fw-600">Closed</span>
+                <span class="text-muted">
+                  · Opens {{ restaurant.opening_time|time:"g:i A" }}</span
+                >
+                {% endif %}
+              </div>
+              <div class="rc-tables small text-muted">
+                <i class="bi bi-table me-1"></i>{{ restaurant.total_tables }}
+                tables
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <div class="text-muted">
+          <i class="bi bi-shop display-1 d-block mb-3"></i>
+          <p>
+            No restaurants yet.
+            <a href="{% url 'restaurant_list' %}">Browse all restaurants</a>
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════════════════ -->
+<section class="how-section section-pad">
+  <div class="container-xl">
+    <div class="section-header text-center mb-5">
+      <div class="section-label">Simple & Smart</div>
+      <h2 class="section-title">How TableMaster Works</h2>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-3 col-md-6">
+        <div class="how-card text-center animate-on-scroll">
+          <div class="how-number">01</div>
+          <div class="how-icon"><i class="bi bi-search"></i></div>
+          <h5 class="how-title">Search & Discover</h5>
+          <p class="text-muted small">
+            Browse hundreds of restaurants by cuisine, location, rating, price,
+            and availability.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="how-card text-center animate-on-scroll delay-1">
+          <div class="how-number">02</div>
+          <div class="how-icon"><i class="bi bi-calendar-event"></i></div>
+          <h5 class="how-title">Choose Date & Time</h5>
+          <p class="text-muted small">
+            Select your preferred date, time, and party size. View real-time
+            availability instantly.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="how-card text-center animate-on-scroll delay-2">
+          <div class="how-number">03</div>
+          <div class="how-icon ai-pulse"><i class="bi bi-cpu-fill"></i></div>
+          <h5 class="how-title">AI Finds Your Table</h5>
+          <p class="text-muted small">
+            Our AI analyzes your preferences and party details to recommend the
+            perfect table arrangement.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="how-card text-center animate-on-scroll delay-3">
+          <div class="how-number">04</div>
+          <div class="how-icon"><i class="bi bi-check2-circle"></i></div>
+          <h5 class="how-title">Confirm & Enjoy</h5>
+          <p class="text-muted small">
+            Receive instant confirmation with your unique booking ID and all
+            reservation details.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AI FEATURE HIGHLIGHT
+═══════════════════════════════════════════════════════════ -->
+<section class="ai-section section-pad">
+  <div class="container-xl">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <div class="ai-visual animate-on-scroll">
+          <div class="aiv-ring"></div>
+          <div class="aiv-ring ring-2"></div>
+          <div class="aiv-core">
+            <i class="bi bi-cpu-fill"></i>
+            <span>AI Engine</span>
+          </div>
+          <!-- Factor nodes -->
+          <div class="aiv-node n1">
+            <i class="bi bi-people-fill"></i><span>Party Size</span>
+          </div>
+          <div class="aiv-node n2">
+            <i class="bi bi-clock-fill"></i><span>Timing</span>
+          </div>
+          <div class="aiv-node n3">
+            <i class="bi bi-heart-fill"></i><span>Preferences</span>
+          </div>
+          <div class="aiv-node n4">
+            <i class="bi bi-graph-up"></i><span>History</span>
+          </div>
+          <div class="aiv-node n5">
+            <i class="bi bi-bar-chart-fill"></i><span>Occupancy</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="section-label">AI Recommendation Engine</div>
+        <h2 class="section-title">
+          Intelligent Table Selection,<br /><em>Powered by Data</em>
+        </h2>
+        <p class="text-muted mb-4">
+          Our proprietary AI analyzes multiple dimensions simultaneously to
+          ensure every reservation delivers an exceptional experience.
+        </p>
+
+        <div class="ai-features">
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Capacity Optimization</div>
+              <div class="text-muted small">
+                Matches table size precisely to your party
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Preference Learning</div>
+              <div class="text-muted small">
+                Adapts to your dining history and stated preferences
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Real-Time Availability</div>
+              <div class="text-muted small">
+                Checks live table status before recommending
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Peak Hour Management</div>
+              <div class="text-muted small">
+                Balances restaurant load for better service
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Smart Alternatives</div>
+              <div class="text-muted small">
+                Suggests optimal alternatives when first choice unavailable
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-feature d-flex align-items-start gap-3 mb-3">
+            <div class="af-icon">
+              <i class="bi bi-check2-circle text-gold fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-600">Utilization Analytics</div>
+              <div class="text-muted small">
+                Maximizes restaurant efficiency and your experience
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'restaurant_list' %}" class="btn btn-gold mt-2">
+          <i class="bi bi-cpu-fill me-2"></i>Experience AI Booking
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════════════════════ -->
+<section class="testimonials-section section-pad">
+  <div class="container-xl">
+    <div class="section-header text-center mb-5">
+      <div class="section-label">What Guests Say</div>
+      <h2 class="section-title">Loved by Diners Everywhere</h2>
+    </div>
+
+    <div class="row g-4">
+      {% for t in testimonials %}
+      <div
+        class="col-lg-4 animate-on-scroll"
+        style="animation-delay: {{ forloop.counter0 }}00ms"
+      >
+        <div class="testimonial-card">
+          <div class="tc-quote"><i class="bi bi-quote"></i></div>
+          <div class="tc-stars mb-3">
+            {% for i in "12345" %}
+            <i class="bi bi-star-fill text-gold"></i>
+            {% endfor %}
+          </div>
+          <p class="tc-text">"{{ t.text }}"</p>
+          <div class="tc-author d-flex align-items-center gap-3 mt-4">
+            <img src="{{ t.avatar }}" alt="{{ t.name }}" class="tc-avatar" />
+            <div>
+              <div class="tc-name">{{ t.name }}</div>
+              <div class="tc-meta text-muted small">
+                <i class="bi bi-geo-alt-fill me-1"></i>{{ t.city }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CTA SECTION
+═══════════════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container-xl cta-content text-center">
+    <h2 class="cta-title">Ready to Find Your Perfect Table?</h2>
+    <p class="cta-subtitle">
+      Join thousands of diners who trust TableMaster for unforgettable dining
+      experiences.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      {% if user.is_authenticated %}
+      <a href="{% url 'restaurant_list' %}" class="btn btn-gold btn-lg px-5">
+        <i class="bi bi-search me-2"></i>Browse Restaurants
+      </a>
+      {% else %}
+      <a href="{% url 'register' %}" class="btn btn-gold btn-lg px-5">
+        <i class="bi bi-person-plus-fill me-2"></i>Create Free Account
+      </a>
+      <a
+        href="{% url 'restaurant_list' %}"
+        class="btn btn-outline-light btn-lg px-5"
+      >
+        Explore Restaurants
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block extra_js %}
+<script>
+  // Set min date on hero date input
+  document.getElementById("heroDate").min = new Date()
+    .toISOString()
+    .split("T")[0];
+
+  // Search tabs
+  document.querySelectorAll(".search-tab").forEach((tab) => {
+    tab.addEventListener("click", function () {
+      document
+        .querySelectorAll(".search-tab")
+        .forEach((t) => t.classList.remove("active"));
+      document
+        .querySelectorAll(".search-panel")
+        .forEach((p) => p.classList.remove("active"));
+      this.classList.add("active");
+      const panel = document.getElementById("tab-" + this.dataset.tab);
+      if (panel) panel.classList.add("active");
+    });
+  });
+</script>
+{% endblock %}

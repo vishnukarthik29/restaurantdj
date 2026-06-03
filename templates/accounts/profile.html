@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:6rem!important;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'customer_dashboard' %}" class="btn-ghost"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    <h1 style="font-family:var(--font-display);font-size:1.8rem;color:var(--tm-cream);margin:0;">My Profile</h1>
+  </div>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags }} mb-3">{{ m }}</div>{% endfor %}{% endif %}
+
+  <div class="row g-4">
+    <!-- Left: avatar + password -->
+    <div class="col-lg-4">
+      <div class="tm-card tm-card-body text-center mb-4">
+        {% if user.avatar %}
+          <img src="{{ user.avatar.url }}" id="avatarPreview"
+               style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--tm-gold);margin-bottom:1rem;">
+        {% else %}
+          <div id="avatarPreview" style="width:100px;height:100px;border-radius:50%;background:var(--tm-gold-dim);border:3px solid var(--tm-gold);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2.5rem;color:var(--tm-gold);margin:0 auto 1rem;">
+            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+          </div>
+        {% endif %}
+        <h3 style="font-family:var(--font-display);font-size:1.3rem;color:var(--tm-cream);">{{ user.get_full_name|default:user.username }}</h3>
+        <div style="font-size:.8rem;color:var(--tm-text-dim);">@{{ user.username }}</div>
+        <div class="mt-2"><span class="tm-badge tm-badge-gold">{{ user.get_role_display }}</span></div>
+        {% if profile %}<div class="mt-2"><span class="tm-badge tm-badge-amber"><i class="bi bi-star-fill"></i> {{ profile.loyalty_points }} pts</span></div>{% endif %}
+      </div>
+
+      <div class="tm-card tm-card-body">
+        <h5 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin-bottom:1.25rem;">Change Password</h5>
+        <form method="post" action="{% url 'change_password' %}" novalidate>
+          {% csrf_token %}
+          <div class="tm-form-group">
+            <label>Current Password</label>
+            <input type="password" name="old_password" class="tm-input" placeholder="Current password">
+          </div>
+          <div class="tm-form-group">
+            <label>New Password</label>
+            <input type="password" name="new_password1" class="tm-input" placeholder="New password (min 8 chars)">
+          </div>
+          <div class="tm-form-group">
+            <label>Confirm New Password</label>
+            <input type="password" name="new_password2" class="tm-input" placeholder="Repeat new password">
+          </div>
+          <button type="submit" class="btn-outline-gold w-100">Update Password</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: profile form -->
+    <div class="col-lg-8">
+      <div class="tm-card">
+        <div class="tm-card-header">
+          <h5 style="font-family:var(--font-display);font-size:1.1rem;color:var(--tm-cream);margin:0;">Personal Information</h5>
+        </div>
+        <div class="tm-card-body">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="tm-form-group">
+              <label>Profile Photo</label>
+              {{ user_form.avatar }}
+            </div>
+
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>First Name</label>
+                  {{ user_form.first_name }}
+                  {% if user_form.first_name.errors %}<div class="form-error">{{ user_form.first_name.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Last Name</label>
+                  {{ user_form.last_name }}
+                  {% if user_form.last_name.errors %}<div class="form-error">{{ user_form.last_name.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-0">
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Email</label>
+                  {{ user_form.email }}
+                  {% if user_form.email.errors %}<div class="form-error">{{ user_form.email.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Phone</label>
+                  {{ user_form.phone }}
+                </div>
+              </div>
+            </div>
+
+            {% if profile_form %}
+            <div class="row g-3 mt-0">
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>WhatsApp Number</label>
+                  {{ profile_form.whatsapp_number }}
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="tm-form-group mb-0">
+                  <label>Dietary Preference</label>
+                  {{ profile_form.dietary_preference }}
+                </div>
+              </div>
+            </div>
+
+            <div class="tm-form-group mt-3">
+              <label>Bio</label>
+              {{ profile_form.bio }}
+            </div>
+
+            <div class="tm-form-group">
+              <label>Seating Preferences</label>
+              <div class="d-flex flex-wrap gap-3">
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.prefers_window_seat }} Window Seat
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.prefers_private_dining }} Private Dining
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.prefers_outdoor }} Outdoor
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.requires_accessibility }} Accessibility
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.prefers_quiet_section }} Quiet Section
+                </label>
+              </div>
+            </div>
+
+            <div class="tm-form-group">
+              <label>Notification Preferences</label>
+              <div class="d-flex gap-3 flex-wrap">
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.notify_email }} Email
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.notify_sms }} SMS
+                </label>
+                <label class="d-flex align-items-center gap-2" style="font-size:.875rem;color:var(--tm-text-muted);cursor:pointer;">
+                  {{ profile_form.notify_whatsapp }} WhatsApp
+                </label>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2 justify-content-end mt-2">
+              <a href="{% url 'customer_dashboard' %}" class="btn-ghost">Cancel</a>
+              <button type="submit" class="btn-gold">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

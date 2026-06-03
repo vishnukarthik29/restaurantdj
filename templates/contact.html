@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+
+<div style="padding:7rem 0 5rem;background:radial-gradient(ellipse 600px 300px at 70% 30%, rgba(201,146,42,0.06) 0%,transparent 70%),var(--tm-mahogany);">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--tm-gold);margin-bottom:.75rem;">Get In Touch</div>
+      <h1 style="font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);color:var(--tm-cream);margin-bottom:.75rem;">Contact Us</h1>
+      <p style="color:var(--tm-text-muted);max-width:500px;margin:0 auto;">Have a question or want to list your restaurant? We'd love to hear from you.</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-4" style="max-width:800px;margin:0 auto 1.5rem;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="row g-5 align-items-start justify-content-center">
+
+      <!-- Contact info -->
+      <div class="col-lg-4">
+        <div class="contact-info-card">
+          <h3 style="font-family:var(--font-display);font-size:1.3rem;color:var(--tm-cream);margin-bottom:1.5rem;">Contact Information</h3>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="contact-label">Email</div>
+              <div class="contact-value"><a href="mailto:hello@tablemaster.in" style="color:var(--tm-cream);">hello@tablemaster.in</a></div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+            <div>
+              <div class="contact-label">Phone</div>
+              <div class="contact-value"><a href="tel:+918000000000" style="color:var(--tm-cream);">+91 80000 00000</a></div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
+            <div>
+              <div class="contact-label">Headquarters</div>
+              <div class="contact-value">Bengaluru, Karnataka, India</div>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon"><i class="bi bi-clock-fill"></i></div>
+            <div>
+              <div class="contact-label">Support Hours</div>
+              <div class="contact-value">Mon–Sat, 9 AM – 8 PM IST</div>
+            </div>
+          </div>
+
+          <!-- Social -->
+          <div style="margin-top:1.5rem;">
+            <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tm-gold);margin-bottom:.75rem;">Follow Us</div>
+            <div class="d-flex gap-2">
+              <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+              <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+              <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact form -->
+      <div class="col-lg-6">
+        <div class="tm-card">
+          <div class="tm-card-header">
+            <h4 style="font-family:var(--font-display);font-size:1.2rem;color:var(--tm-cream);margin:0;">Send a Message</h4>
+          </div>
+          <div class="tm-card-body">
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <div class="tm-form-group mb-0">
+                    <label>Full Name <span class="required">*</span></label>
+                    <div class="tm-input-group">
+                      <i class="bi bi-person-fill input-icon"></i>
+                      <input type="text" name="name" value="{{ form.name.value|default:'' }}"
+                             class="tm-input {% if form.name.errors %}input-error{% endif %}"
+                             placeholder="Your name">
+                    </div>
+                    {% if form.name.errors %}<div class="form-error">{{ form.name.errors.0 }}</div>{% endif %}
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="tm-form-group mb-0">
+                    <label>Email <span class="required">*</span></label>
+                    <div class="tm-input-group">
+                      <i class="bi bi-envelope-fill input-icon"></i>
+                      <input type="email" name="email" value="{{ form.email.value|default:'' }}"
+                             class="tm-input {% if form.email.errors %}input-error{% endif %}"
+                             placeholder="your@email.com">
+                    </div>
+                    {% if form.email.errors %}<div class="form-error">{{ form.email.errors.0 }}</div>{% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="tm-form-group mt-3">
+                <label>Subject</label>
+                <select name="subject" class="tm-select">
+                  <option value="">Select a topic…</option>
+                  <option value="general">General Enquiry</option>
+                  <option value="restaurant">List My Restaurant</option>
+                  <option value="reservation">Reservation Issue</option>
+                  <option value="technical">Technical Support</option>
+                  <option value="partnership">Partnership</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="tm-form-group">
+                <label>Message <span class="required">*</span></label>
+                <textarea name="message"
+                          class="tm-textarea {% if form.message.errors %}input-error{% endif %}"
+                          data-max-chars="1000"
+                          style="min-height:130px;"
+                          placeholder="Tell us how we can help…">{{ form.message.value|default:'' }}</textarea>
+                {% if form.message.errors %}<div class="form-error">{{ form.message.errors.0 }}</div>{% endif %}
+              </div>
+
+              {% if form.non_field_errors %}
+                <div class="form-error mb-3">{{ form.non_field_errors.0 }}</div>
+              {% endif %}
+
+              <button type="submit" class="btn-gold w-100">
+                <i class="bi bi-send-fill"></i> Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- For restaurants banner -->
+<div style="background:var(--tm-surface);border-top:1px solid var(--tm-border);padding:4rem 0;text-align:center;">
+  <div class="container">
+    <div style="font-size:2rem;margin-bottom:1rem;">🍽️</div>
+    <h2 style="font-family:var(--font-display);font-size:2rem;color:var(--tm-cream);margin-bottom:.75rem;">Want to list your restaurant?</h2>
+    <p style="color:var(--tm-text-muted);margin-bottom:1.5rem;max-width:480px;margin-left:auto;margin-right:auto;">
+      Join our growing network and reach thousands of food lovers. Our team will help you get set up within 24 hours.
+    </p>
+    <a href="#" class="btn-gold" onclick="document.querySelector('[name=subject]').value='restaurant';document.querySelector('[name=subject]').scrollIntoView({behavior:'smooth'});return false;">
+      Partner With Us
+    </a>
+  </div>
+</div>
+
+{% endblock %}

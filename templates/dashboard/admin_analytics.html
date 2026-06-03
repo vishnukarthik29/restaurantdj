@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">Analytics</h1>
+      <p style="color:var(--tm-text-muted);font-size:.875rem;margin:0;">Platform performance overview</p>
+    </div>
+    <div class="d-flex gap-2">
+      {% for val, label in period_choices %}
+        <a href="?period={{ val }}" class="{% if current_period == val %}btn-gold{% else %}btn-ghost{% endif %}" style="padding:.4rem 1rem;font-size:.82rem;">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.75rem;flex-wrap:wrap;">
+    <a href="{% url 'admin_dashboard' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;">Overview</a>
+    <a href="{% url 'admin_restaurants' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-building"></i> Restaurants</a>
+    <a href="{% url 'admin_reservations' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-calendar3"></i> Reservations</a>
+    <a href="{% url 'admin_users' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-people-fill"></i> Users</a>
+    <a href="{% url 'admin_analytics' %}" class="btn-gold" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-graph-up"></i> Analytics</a>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon gold"><i class="bi bi-calendar-check-fill"></i></div>
+        <div><div class="stat-value">{{ kpi.total_reservations }}</div><div class="stat-label">Reservations (Period)</div></div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+        <div><div class="stat-value">{{ kpi.completion_rate }}%</div><div class="stat-label">Completion Rate</div></div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="bi bi-magic"></i></div>
+        <div><div class="stat-value">{{ kpi.ai_usage_rate }}%</div><div class="stat-label">AI Usage</div></div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3 fade-up">
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
+        <div><div class="stat-value">{{ kpi.cancellation_rate }}%</div><div class="stat-label">Cancellation Rate</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Reservations over time -->
+    <div class="col-lg-8 fade-up">
+      <div class="chart-card">
+        <div class="chart-card-title">Reservations Over Time (Last 30 Days)</div>
+        <canvas id="reservationChart" height="100"
+                data-labels="{{ chart_labels }}"
+                data-values="{{ chart_values }}"></canvas>
+      </div>
+    </div>
+    <!-- By cuisine -->
+    <div class="col-lg-4 fade-up">
+      <div class="chart-card">
+        <div class="chart-card-title">By Cuisine Type</div>
+        <canvas id="cuisineChart" height="180"
+                data-labels="{{ cuisine_labels }}"
+                data-values="{{ cuisine_values }}"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Top restaurants -->
+    <div class="col-lg-6 fade-up">
+      <div class="chart-card">
+        <div class="chart-card-title">Top Restaurants by Reservations</div>
+        {% for r in top_restaurants %}
+        <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid rgba(201,146,42,.08);">
+          <span style="width:20px;text-align:right;color:var(--tm-text-dim);font-size:.8rem;">{{ forloop.counter }}.</span>
+          <div style="flex:1;">
+            <div style="font-size:.875rem;font-weight:500;color:var(--tm-cream);">{{ r.name }}</div>
+            <div style="height:4px;background:var(--tm-mahogany-3);border-radius:2px;overflow:hidden;margin-top:4px;">
+              <div style="height:100%;background:linear-gradient(90deg,var(--tm-gold),var(--tm-gold-pale));width:{{ r.pct }}%;border-radius:2px;"></div>
+            </div>
+          </div>
+          <span style="color:var(--tm-gold);font-weight:600;font-size:.875rem;">{{ r.count }}</span>
+        </div>
+        {% empty %}<div style="color:var(--tm-text-dim);text-align:center;padding:2rem;font-size:.875rem;">No data yet.</div>{% endfor %}
+      </div>
+    </div>
+
+    <!-- Peak hours -->
+    <div class="col-lg-6 fade-up">
+      <div class="chart-card">
+        <div class="chart-card-title">Peak Booking Hours</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem;">
+          {% for h in peak_hours %}
+          <div style="text-align:center;width:calc(7.69% - .4rem);">
+            <div style="height:48px;background:var(--tm-gold);border-radius:4px;opacity:{{ h.opacity }};margin-bottom:.2rem;"></div>
+            <div style="font-size:.68rem;color:var(--tm-text-dim);">{{ h.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:1rem;font-size:.75rem;color:var(--tm-text-dim);">
+          <div style="height:10px;width:10px;background:var(--tm-gold);opacity:.15;border-radius:2px;"></div> Low
+          <div style="height:10px;width:10px;background:var(--tm-gold);border-radius:2px;margin-left:.5rem;"></div> Peak
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

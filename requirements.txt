@@ -1,0 +1,20 @@
+# Core
+Django==4.2.9
+Pillow==10.2.0
+whitenoise==6.6.0
+
+# Forms & templates
+django-crispy-forms==2.1
+crispy-bootstrap5==2023.10
+django-widget-tweaks==1.5.0
+
+ google-genai
+# Dev tools (optional, safe to omit if install is slow)
+# django-debug-toolbar==4.2.0
+
+# Production server (optional for dev)
+# gunicorn==21.2.0
+
+# MySQL support (only needed if using MySQL instead of SQLite)
+# mysqlclient==2.2.1
+

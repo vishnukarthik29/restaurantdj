@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load tm_tags %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:5.5rem!important;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">Users</h1>
+      <p style="color:var(--tm-text-muted);font-size:.875rem;margin:0;">{{ total_count }} registered</p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.5rem;margin-bottom:1.75rem;flex-wrap:wrap;">
+    <a href="{% url 'admin_dashboard' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;">Overview</a>
+    <a href="{% url 'admin_restaurants' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-building"></i> Restaurants</a>
+    <a href="{% url 'admin_reservations' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-calendar3"></i> Reservations</a>
+    <a href="{% url 'admin_users' %}" class="btn-gold" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-people-fill"></i> Users</a>
+    <a href="{% url 'admin_analytics' %}" class="btn-ghost" style="padding:.4rem 1rem;font-size:.82rem;"><i class="bi bi-graph-up"></i> Analytics</a>
+  </div>
+
+  <form method="get" class="mb-3">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <div class="tm-input-group">
+          <i class="bi bi-search input-icon"></i>
+          <input type="text" name="q" value="{{ request.GET.q }}" class="tm-input" placeholder="Search by name or email…">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <select name="role" class="tm-select">
+          <option value="">All Roles</option>
+          {% for val, label in role_choices %}
+            <option value="{{ val }}" {% if request.GET.role == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn-outline-gold" style="height:43px;">Search</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="tm-card">
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Reservations</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if u.avatar %}
+                  <img src="{{ u.avatar.url }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid var(--tm-border);">
+                {% else %}
+                  <div style="width:36px;height:36px;border-radius:50%;background:var(--tm-gold-dim);border:1px solid var(--tm-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);color:var(--tm-gold);font-size:.9rem;">
+                    {{ u.first_name|first|upper }}{{ u.last_name|first|upper }}
+                  </div>
+                {% endif %}
+                <div>
+                  <div style="font-weight:500;color:var(--tm-cream);">{{ u.get_full_name|default:u.username }}</div>
+                  <div style="font-size:.76rem;color:var(--tm-text-dim);">@{{ u.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="color:var(--tm-text-muted);font-size:.875rem;">{{ u.email }}</td>
+            <td><span class="tm-badge tm-badge-gold">{{ u.get_role_display }}</span></td>
+            <td style="text-align:center;color:var(--tm-text-muted);">{{ u.reservation_count|default:0 }}</td>
+            <td style="color:var(--tm-text-dim);font-size:.82rem;">{{ u.date_joined|date:"N j, Y" }}</td>
+            <td>{% if u.is_active %}<span class="tm-badge tm-badge-green">Active</span>{% else %}<span class="tm-badge tm-badge-red">Inactive</span>{% endif %}</td>
+            <td><a href="/admin/accounts/user/{{ u.pk }}/change/" class="btn-action" target="_blank"><i class="bi bi-pencil-fill"></i></a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--tm-text-dim);">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if users.has_other_pages %}
+  <div class="tm-pagination">
+    {% if users.has_previous %}<a href="{% querystring page=users.previous_page_number %}" class="page-btn"><i class="bi bi-chevron-left"></i></a>{% endif %}
+    {% for num in users.paginator.page_range %}<a href="{% querystring page=num %}" class="page-btn {% if users.number == num %}active{% endif %}">{{ num }}</a>{% endfor %}
+    {% if users.has_next %}<a href="{% querystring page=users.next_page_number %}" class="page-btn"><i class="bi bi-chevron-right"></i></a>{% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

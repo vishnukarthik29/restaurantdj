@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container-xl py-5" style="padding-top:6rem!important;">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h1 style="font-family:var(--font-display);font-size:1.9rem;color:var(--tm-cream);margin:0;">Notifications</h1>
+      <p style="color:var(--tm-text-muted);font-size:.875rem;margin:0;">
+        {% if unread_count %}{{ unread_count }} unread notification{{ unread_count|pluralize }}{% else %}All caught up!{% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      {% if unread_count %}
+      <button class="btn-outline-gold" id="markAllRead">
+        <i class="bi bi-check2-all"></i> Mark all read
+      </button>
+      {% endif %}
+      <a href="{% url 'customer_dashboard' %}" class="btn-ghost"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    </div>
+  </div>
+
+  <div class="tm-card" style="max-width:720px;">
+    {% if notifications %}
+      {% for notif in notifications %}
+      <div class="notif-item {% if not notif.is_read %}unread{% endif %}" data-notif-id="{{ notif.id }}">
+        <div class="notif-icon" style="font-size:1.1rem;">{{ notif.icon }}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.875rem;font-weight:{% if not notif.is_read %}600{% else %}400{% endif %};color:var(--tm-cream);">
+            {{ notif.title }}
+          </div>
+          <div class="notif-text mt-1">{{ notif.message }}</div>
+          <div class="notif-time mt-1">{{ notif.created_at|timesince }} ago</div>
+        </div>
+        {% if not notif.is_read %}
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--tm-gold);flex-shrink:0;margin-top:6px;"></div>
+        {% endif %}
+      </div>
+      {% if not forloop.last %}<hr style="border-color:var(--tm-border);margin:0;">{% endif %}
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <div class="empty-title">No Notifications</div>
+        <div class="empty-desc">You're all caught up. Notifications about your reservations will appear here.</div>
+        <a href="{% url 'restaurant_list' %}" class="btn-gold">Find Restaurants</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if notifications.has_other_pages %}
+  <div class="tm-pagination mt-4">
+    {% if notifications.has_previous %}
+    <a href="?page={{ notifications.previous_page_number }}" class="page-btn"><i class="bi bi-chevron-left"></i></a>
+    {% endif %}
+    {% for num in notifications.paginator.page_range %}
+    <a href="?page={{ num }}" class="page-btn {% if notifications.number == num %}active{% endif %}">{{ num }}</a>
+    {% endfor %}
+    {% if notifications.has_next %}
+    <a href="?page={{ notifications.next_page_number }}" class="page-btn"><i class="bi bi-chevron-right"></i></a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

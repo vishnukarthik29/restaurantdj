@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% block title %}{{ restaurant.name }}{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="restaurant-hero">
+  <img src="{{ primary_image }}" id="galleryMain" alt="{{ restaurant.name }}">
+  <div class="restaurant-hero-overlay"></div>
+  <div class="restaurant-hero-content">
+    <div class="container-xl">
+      <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+        <div>
+          {% if restaurant.is_featured %}<span class="tm-badge tm-badge-gold mb-2">⭐ Featured</span>{% endif %}
+          <h1 class="restaurant-detail-title mb-1">{{ restaurant.name }}</h1>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1rem;color:var(--tm-text-muted);font-size:.9rem;">
+            <span><i class="bi bi-geo-alt-fill" style="color:var(--tm-gold);"></i> {{ restaurant.city }}</span>
+            <span>★ {{ restaurant.avg_rating|floatformat:1 }} ({{ restaurant.total_reviews }} reviews)</span>
+            <span style="color:var(--tm-gold);">{{ restaurant.price_symbol }}</span>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          {% if user.is_authenticated %}
+          <button class="fav-btn btn-ghost {% if is_favourite %}active{% endif %}"
+                  data-slug="{{ restaurant.slug }}"
+                  style="width:auto;border-radius:8px;padding:.5rem 1rem;">
+            <i class="bi bi-heart{% if is_favourite %}-fill{% endif %}"></i>
+            {% if is_favourite %}Saved{% else %}Save{% endif %}
+          </button>
+          {% endif %}
+          <a href="{% url 'book_table' restaurant.slug %}" class="btn-gold">
+            <i class="bi bi-calendar-plus"></i> Reserve a Table
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gallery thumbnails -->
+{% if all_images|length > 1 %}
+<div style="background:var(--tm-surface);border-bottom:1px solid var(--tm-border);padding:.75rem 0;">
+  <div class="container-xl">
+    <div class="d-flex gap-2 overflow-auto" style="scrollbar-width:none;">
+      {% for img in all_images %}
+      <img src="{{ img.url }}" alt="" data-gallery-src="{{ img.url }}"
+           style="width:80px;height:56px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;
+                  border:2px solid {% if forloop.first %}var(--tm-gold){% else %}transparent{% endif %};">
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="container-xl py-4">
+  <div class="row g-4">
+
+    <!-- Main content -->
+    <div class="col-lg-8">
+      <!-- Feature badges -->
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        {% for c in restaurant.cuisine_types.all %}
+          <span class="cuisine-tag" style="font-size:.8rem;padding:4px 12px;">{{ c.icon }} {{ c.name }}</span>
+        {% endfor %}
+        {% if restaurant.has_parking %}<span class="tm-badge tm-badge-gold">🅿 Parking</span>{% endif %}
+        {% if restaurant.has_wifi %}<span class="tm-badge tm-badge-gold">📶 WiFi</span>{% endif %}
+        {% if restaurant.has_outdoor_seating %}<span class="tm-badge tm-badge-gold">🌿 Outdoor</span>{% endif %}
+        {% if restaurant.has_private_dining %}<span class="tm-badge tm-badge-gold">🚪 Private</span>{% endif %}
+        {% if restaurant.has_bar %}<span class="tm-badge tm-badge-gold">🍸 Bar</span>{% endif %}
+        {% if restaurant.is_wheelchair_accessible %}<span class="tm-badge tm-badge-blue">♿ Accessible</span>{% endif %}
+      </div>
+
+      <!-- Tabs -->
+      <div class="detail-tabs">
+        <div class="detail-tab-nav">
+          <button class="detail-tab-btn active" data-tab="overview">Overview</button>
+          <button class="detail-tab-btn" data-tab="tables">Tables</button>
+          <button class="detail-tab-btn" data-tab="reviews">Reviews ({{ restaurant.total_reviews }})</button>
+          <button class="detail-tab-btn" data-tab="hours">Hours</button>
+        </div>
+
+        <div class="detail-tab-content" id="tab-overview">
+          <h3 style="font-family:var(--font-display);font-size:1.3rem;color:var(--tm-cream);margin-bottom:1rem;">About {{ restaurant.name }}</h3>
+          <p style="color:var(--tm-text-muted);line-height:1.8;">{{ restaurant.description }}</p>
+          {% if restaurant.tagline %}<p style="color:var(--tm-gold);font-style:italic;">"{{ restaurant.tagline }}"</p>{% endif %}
+        </div>
+
+        <div class="detail-tab-content d-none" id="tab-tables">
+          {% if tables %}
+          <div class="table-grid">
+            {% for t in tables %}
+            <div class="table-card">
+              <div class="table-icon">{{ t.type_icon }}</div>
+              <div class="table-type">Table {{ t.table_number }}</div>
+              <div class="table-cap">{{ t.get_table_type_display }}</div>
+              <div class="table-cap">Up to {{ t.capacity }} guests</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state py-3"><div class="empty-desc">Table details not available.</div></div>
+          {% endif %}
+        </div>
+
+        <div class="detail-tab-content d-none" id="tab-reviews">
+          {% for review in reviews %}
+          <div class="review-card">
+            <div class="review-author">
+              <div class="review-avatar">{{ review.customer.first_name|first|upper }}</div>
+              <div>
+                <div class="review-name">{{ review.customer.get_full_name }}</div>
+                <div class="review-date">{{ review.created_at|date:"N j, Y" }}</div>
+              </div>
+              <div class="ms-auto star-rating">
+                {% for i in "12345" %}
+                  <i class="bi bi-star{% if forloop.counter <= review.overall_rating %}-fill{% endif %}"></i>
+                {% endfor %}
+              </div>
+            </div>
+            {% if review.title %}<div style="font-weight:600;color:var(--tm-cream);font-size:.9rem;margin-bottom:.35rem;">{{ review.title }}</div>{% endif %}
+            <p class="review-text">{{ review.comment }}</p>
+          </div>
+          {% empty %}
+          <div class="empty-state py-3"><div class="empty-desc">No reviews yet.</div></div>
+          {% endfor %}
+        </div>
+
+        <div class="detail-tab-content d-none" id="tab-hours">
+          <table class="hours-table">
+            {% for h in operating_hours %}
+            <tr>
+              <td>{{ h.get_day_of_week_display }}</td>
+              <td>
+                {% if not h.is_open %}<span style="color:var(--tm-text-dim);">Closed</span>
+                {% elif h.open_time and h.close_time %}{{ h.open_time|time:"g:i A" }} – {{ h.close_time|time:"g:i A" }}
+                {% else %}Open{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
+          <div style="margin-top:1.5rem;font-size:.875rem;color:var(--tm-text-muted);">
+            <div><i class="bi bi-telephone-fill" style="color:var(--tm-gold);margin-right:.5rem;"></i>{{ restaurant.phone }}</div>
+            {% if restaurant.email %}<div class="mt-1"><i class="bi bi-envelope-fill" style="color:var(--tm-gold);margin-right:.5rem;"></i>{{ restaurant.email }}</div>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick booking sidebar -->
+    <div class="col-lg-4">
+      <div class="booking-summary-card" style="position:sticky;top:80px;">
+        <div class="booking-summary-body">
+          <h4 style="font-family:var(--font-display);font-size:1.2rem;color:var(--tm-cream);margin-bottom:1.25rem;">Quick Reservation</h4>
+          <div class="tm-form-group">
+            <label>Date</label>
+            <input type="date" id="quickDate" class="tm-input">
+          </div>
+          <div class="tm-form-group">
+            <label>Time</label>
+            <select id="quickTime" class="tm-select">
+              <option value="">Select time…</option>
+              {% for slot in time_slots %}
+                <option value="{{ slot }}">{{ slot }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="tm-form-group">
+            <label>Guests</label>
+            <select id="quickGuests" class="tm-select">
+              {% for n in "12345678" %}<option value="{{ n }}">{{ n }} guest{{ n|pluralize }}</option>{% endfor %}
+              <option value="10">10+ guests</option>
+            </select>
+          </div>
+          <a href="{% url 'book_table' restaurant.slug %}" id="quickBookBtn" class="btn-gold w-100">
+            <i class="bi bi-calendar-check"></i> Reserve a Table
+          </a>
+          <hr style="border-color:var(--tm-border);margin:1.25rem 0;">
+          <div style="font-size:.8rem;color:var(--tm-text-dim);display:flex;flex-direction:column;gap:.4rem;">
+            <div>✅ Free cancellation up to 2 hours before</div>
+            <div>✨ AI-powered table recommendation</div>
+            <div>📧 Instant confirmation email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.detail-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.detail-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.add('d-none'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.remove('d-none');
+  });
+});
+// Populate quick book link
+document.getElementById('quickBookBtn').addEventListener('click', function(e) {
+  const date = document.getElementById('quickDate').value;
+  const time = document.getElementById('quickTime').value;
+  const guests = document.getElementById('quickGuests').value;
+  if (date) {
+    e.preventDefault();
+    const base = this.href.split('?')[0];
+    this.href = `${base}?date=${date}&time=${time}&guests=${guests}`;
+    window.location = this.href;
+  }
+});
+const qd = document.getElementById('quickDate');
+if (qd) qd.min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
